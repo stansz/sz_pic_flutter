@@ -234,14 +234,6 @@ theme: ThemeData(
 
 See [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for detailed progress.
 
-## 🤝 Contributing
-
-Contributions are welcome! Here's how you can help:
-
-1. **Report Bugs**: Open an issue with details
-2. **Suggest Features**: Share your ideas
-3. **Submit PRs**: Fork, code, test, and submit
-4. **Improve Docs**: Help make guides clearer
 
 ### Development Workflow
 
@@ -301,24 +293,15 @@ See [`pubspec.yaml`](pubspec.yaml) for complete list.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+
 
 ## 🙏 Acknowledgments
 
-- **Flutter Team**: Amazing framework
-- **Ollama**: Local AI inference
-- **OpenRouter**: Cloud AI platform
-- **Material Design**: Beautiful UI guidelines
+- Vibed coded with help of Kilo Code (and mostly Claude Sonnet 4.5)
 
 ## 📞 Support
 
 - **Issues**: [GitHub Issues](https://github.com/yourusername/sz_pic/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/sz_pic/discussions)
-- **Email**: support@szpic.app
-
-## 🌟 Star History
-
-If you find this project useful, please consider giving it a star! ⭐
 
 ---
 
