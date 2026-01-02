@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui;
@@ -182,20 +183,29 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
                       ),
                     ],
                   ),
-                  child: RepaintBoundary(
-                    key: _collageKey,
-                    child: Container(
-                      color: Color(_currentLayout.backgroundColor),
-                      child: Stack(
-                        children: _currentLayout.cells.map((cell) {
-                          final image = _getImageForCell(cell);
-                          return _CollageCell(
-                            cell: cell,
-                            image: image,
-                          );
-                        }).toList(),
-                      ),
-                    ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final canvasSize = Size(constraints.maxWidth, constraints.maxHeight);
+
+                      return RepaintBoundary(
+                        key: _collageKey,
+                        child: Container(
+                          width: constraints.maxWidth,
+                          height: constraints.maxHeight,
+                          color: Color(_currentLayout.backgroundColor),
+                          child: Stack(
+                            children: _currentLayout.cells.map((cell) {
+                              final image = _getImageForCell(cell);
+                              return _CollageCell(
+                                cell: cell,
+                                image: image,
+                                canvasSize: canvasSize,
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -277,21 +287,24 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
 class _CollageCell extends StatelessWidget {
   final LayoutCell cell;
   final ImageItem? image;
+  final Size canvasSize;
 
   const _CollageCell({
     required this.cell,
     this.image,
+    required this.canvasSize,
   });
 
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      left: cell.x * 1000, // Assuming canvas width of 1000
-      top: cell.y * 1000, // Assuming canvas height of 1000
-      width: cell.width * 1000,
-      height: cell.height * 1000,
+      left: cell.x * canvasSize.width,
+      top: cell.y * canvasSize.height,
+      width: cell.width * canvasSize.width,
+      height: cell.height * canvasSize.height,
       child: Transform.rotate(
-        angle: cell.rotation * 3.14159 / 180, // Convert to radians
+        angle: cell.rotation * math.pi / 180, // Convert to radians
+        alignment: Alignment.center,
         child: Transform.scale(
           scale: cell.scale,
           child: image != null
