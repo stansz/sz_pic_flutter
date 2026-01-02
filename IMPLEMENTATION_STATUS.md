@@ -140,7 +140,7 @@
 
 ### Video (Planned)
 - `video_player` - Video playback
-- `flutter_ffmpeg` - Video processing
+- _FFmpeg package to be added when implementing slideshow export_
 
 ### Utilities
 - `uuid` - Unique ID generation
@@ -182,12 +182,14 @@
 ## 🧪 Testing Status
 
 ### Manual Testing
-- ✅ App launches successfully
+- ✅ App launches successfully (tested on Android emulator)
+- ✅ Build completes without errors
 - ✅ Image picker opens
 - ✅ Layout generation works
 - ✅ Layout preview displays correctly
 - ✅ Collage editor renders images
 - ✅ Export saves to file system
+- ✅ Fixed deprecated flutter_ffmpeg build issue
 
 ### Automated Testing
 - ⏳ Unit tests for models
@@ -203,6 +205,7 @@
 3. **Memory Management**: Large images may cause memory issues
 4. **Permission Handling**: Runtime permission requests not fully implemented
 5. **Error Messages**: Generic error messages need more specificity
+6. **FFmpeg Removed**: Video export functionality removed temporarily due to deprecated package - will be re-added with ffmpeg_kit_flutter_min when implementing slideshow export
 
 ## 🔧 Technical Debt
 
