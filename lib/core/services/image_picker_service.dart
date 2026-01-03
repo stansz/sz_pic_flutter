@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:image/image.dart' as img;
@@ -76,48 +76,22 @@ class ImagePickerService {
 
       if (image == null) return null;
 
-      final fileStats = await File(file.path).stat();
+      final size = await file.length();
+      final resolvedPath = file.path.isNotEmpty
+          ? file.path
+          : (kIsWeb ? 'web:${file.name}' : 'unknown:${file.name}');
+      final cachedBytes = kIsWeb ? bytes : null;
 
       return ImageItem(
         id: _uuid.v4(),
-        path: file.path,
+        path: resolvedPath,
         name: file.name,
         addedAt: DateTime.now(),
         width: image.width,
         height: image.height,
-        fileSize: fileStats.size,
+        fileSize: size,
+        bytes: cachedBytes,
       );
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// Get aspect ratio of an image
-  Future<double?> getAspectRatio(String path) async {
-    try {
-      final bytes = await File(path).readAsBytes();
-      final image = img.decodeImage(bytes);
-
-      if (image == null) return null;
-
-      return image.width / image.height;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// Get image dimensions
-  Future<Map<String, int>?> getImageDimensions(String path) async {
-    try {
-      final bytes = await File(path).readAsBytes();
-      final image = img.decodeImage(bytes);
-
-      if (image == null) return null;
-
-      return {
-        'width': image.width,
-        'height': image.height,
-      };
     } catch (e) {
       return null;
     }
