@@ -54,6 +54,8 @@ Located in `/Users/sz/StudioProjects/sz_pic_flutter/pubspec.yaml`
 - **path ^1.8.3**: Path manipulation utilities
 
 ### File Handling
+- **file_picker ^10.3.8**: Directory and file picker via native dialogs
+  - Used: Prompting user to choose export folder for PNG saves
 - **permission_handler ^11.2.0**: Runtime permissions
   - Planned: Request camera, storage permissions
 

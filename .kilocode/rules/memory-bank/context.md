@@ -2,14 +2,16 @@
 
 ## Project Status
 **Version**: 1.0.0-alpha  
-**Last Updated**: January 2, 2026  
+**Last Updated**: January 3, 2026  
 **Build Status**: ✅ Compiles and runs successfully on Android
 
 ## Recent Changes
 
 ### Current Session (Jan 3, 2026)
-1. **Web collage flow**: Cached picked image bytes for web builds and render with `Image.memory`, ensuring Chrome now waits for layout generation after selection
-2. **Web export support**: Added a download-based export helper that avoids `path_provider` on the web and triggers a PNG download instead of hitting the missing plugin
+1. **Export location picker**: Added `file_picker` and prompt for user-selected save directory for PNG exports on mobile/desktop; web still downloads via blob
+2. **Home navigation**: Added AppBar home icon to return to the root screen after exporting; removed redundant bottom home button
+3. **Web collage flow**: Cached picked image bytes for web builds and render with `Image.memory`, ensuring Chrome now waits for layout generation after selection
+4. **Web export support**: Added a download-based export helper that avoids `path_provider` on the web and triggers a PNG download instead of hitting the missing plugin
 
 ### Previous Session (Jan 2, 2026)
 1. **Fixed Critical Build Error**: Removed deprecated `flutter_ffmpeg` package that was causing Gradle namespace build failures
@@ -58,7 +60,6 @@
 - Implement Settings screen with AI provider configuration
 - Add background color picker to collage editor
 - Implement aspect ratio selector
-- Add home icon/button to return to homepage of application
 
 ### Short Term (This Month)
 - Build SQLite database for project storage
