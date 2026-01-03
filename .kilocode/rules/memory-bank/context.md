@@ -7,12 +7,16 @@
 
 ## Recent Changes
 
-### Most Recent Session (Jan 2, 2026)
+### Current Session (Jan 3, 2026)
+1. **Web collage flow**: Cached picked image bytes for web builds and render with `Image.memory`, ensuring Chrome now waits for layout generation after selection
+2. **Web export support**: Added a download-based export helper that avoids `path_provider` on the web and triggers a PNG download instead of hitting the missing plugin
+
+### Previous Session (Jan 2, 2026)
 1. **Fixed Critical Build Error**: Removed deprecated `flutter_ffmpeg` package that was causing Gradle namespace build failures
 2. **Confirmed App Launch**: Successfully tested app on Android emulator
 3. **Initialized Memory Bank**: Created comprehensive documentation for future sessions
 
-### Previous Session
+### Session Before That
 1. Implemented core collage creation workflow
 2. Built AI integration with Ollama and OpenRouter providers
 3. Created collage editor with shuffle and export functionality

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:equatable/equatable.dart';
 
 /// Represents an image in the app with metadata
@@ -9,6 +11,7 @@ class ImageItem extends Equatable {
   final int? width;
   final int? height;
   final int? fileSize;
+  final Uint8List? bytes;
 
   const ImageItem({
     required this.id,
@@ -18,6 +21,7 @@ class ImageItem extends Equatable {
     this.width,
     this.height,
     this.fileSize,
+    this.bytes,
   });
 
   ImageItem copyWith({
@@ -28,6 +32,7 @@ class ImageItem extends Equatable {
     int? width,
     int? height,
     int? fileSize,
+    Uint8List? bytes,
   }) {
     return ImageItem(
       id: id ?? this.id,
@@ -37,6 +42,7 @@ class ImageItem extends Equatable {
       width: width ?? this.width,
       height: height ?? this.height,
       fileSize: fileSize ?? this.fileSize,
+      bytes: bytes ?? this.bytes,
     );
   }
 

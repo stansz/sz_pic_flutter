@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'dart:ui' as ui;
 import 'package:path_provider/path_provider.dart';
 import '../../core/models/image_item.dart';
 import '../../core/models/collage_models.dart';
+import '../../core/utils/export_helper.dart';
 
 class CollageEditorScreen extends StatefulWidget {
   final CollageLayout layout;
@@ -53,10 +55,24 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
       final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       final buffer = byteData!.buffer.asUint8List();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+
+      if (kIsWeb) {
+        final filename = 'collage_$timestamp.png';
+        downloadPng(buffer, filename);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Collage download ready: $filename'),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      }
 
       // Save to device
       final directory = await getApplicationDocumentsDirectory();
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
       final filePath = '${directory.path}/collage_$timestamp.png';
       final file = File(filePath);
       await file.writeAsBytes(buffer);
@@ -308,10 +324,15 @@ class _CollageCell extends StatelessWidget {
         child: Transform.scale(
           scale: cell.scale,
           child: image != null
-              ? Image.file(
-                  File(image!.path),
-                  fit: BoxFit.cover,
-                )
+              ? (kIsWeb && image!.bytes != null
+                  ? Image.memory(
+                      image!.bytes!,
+                      fit: BoxFit.cover,
+                    )
+                  : Image.file(
+                      File(image!.path),
+                      fit: BoxFit.cover,
+                    ))
               : Container(
                   color: Colors.grey[300],
                   child: const Center(

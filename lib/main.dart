@@ -31,7 +31,7 @@ class SZPicApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'SZ Pic',
+        title: 'SZ Picture Create',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
