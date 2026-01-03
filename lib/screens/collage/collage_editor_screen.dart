@@ -4,7 +4,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as p;
 import '../../core/models/image_item.dart';
 import '../../core/models/collage_models.dart';
 import '../../core/utils/export_helper.dart';
@@ -71,9 +72,25 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
         return;
       }
 
-      // Save to device
-      final directory = await getApplicationDocumentsDirectory();
-      final filePath = '${directory.path}/collage_$timestamp.png';
+      // Prompt user for a save directory (Android/iOS/desktop)
+      final selectedDirectory = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Select folder to save collage',
+        lockParentWindow: true,
+      );
+
+      if (selectedDirectory == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Export canceled'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
+      final filePath = p.join(selectedDirectory, 'collage_$timestamp.png');
       final file = File(filePath);
       await file.writeAsBytes(buffer);
 
@@ -81,7 +98,7 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Collage saved to: $filePath'),
-            duration: const Duration(seconds: 3),
+            duration: const Duration(seconds: 4),
             action: SnackBarAction(
               label: 'OK',
               onPressed: () {},
@@ -178,6 +195,13 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
             tooltip: 'Export',
             onPressed: _isExporting ? null : _showExportOptions,
           ),
+          IconButton(
+            icon: const Icon(Icons.home_outlined),
+            tooltip: 'Return to Home',
+            onPressed: () {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+          ),
         ],
       ),
       body: Column(
@@ -229,69 +253,77 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
           ),
 
           // Bottom controls
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _ControlButton(
-                  icon: Icons.aspect_ratio,
-                  label: 'Aspect',
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Aspect ratio adjustment coming soon')),
-                    );
-                  },
-                ),
-                _ControlButton(
-                  icon: Icons.space_bar,
-                  label: 'Spacing',
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Spacing adjustment coming soon')),
-                    );
-                  },
-                ),
-                _ControlButton(
-                  icon: Icons.shuffle,
-                  label: 'Shuffle',
-                  onPressed: () {
-                    setState(() {
-                      // Shuffle images in cells
-                      final imageIds = _currentLayout.cells
-                          .map((c) => c.imageId)
-                          .toList()
-                        ..shuffle();
-                      final updatedCells = <LayoutCell>[];
-                      for (var i = 0; i < _currentLayout.cells.length; i++) {
-                        updatedCells.add(
-                          _currentLayout.cells[i].copyWith(imageId: imageIds[i]),
-                        );
-                      }
-                      _currentLayout = _currentLayout.copyWith(cells: updatedCells);
-                    });
-                  },
-                ),
-                _ControlButton(
-                  icon: Icons.auto_awesome,
-                  label: 'AI Enhance',
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('AI enhancement coming soon')),
-                    );
-                  },
-                ),
-              ],
+          SafeArea(
+            top: false,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _ControlButton(
+                        icon: Icons.aspect_ratio,
+                        label: 'Aspect',
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Aspect ratio adjustment coming soon')),
+                          );
+                        },
+                      ),
+                      _ControlButton(
+                        icon: Icons.space_bar,
+                        label: 'Spacing',
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Spacing adjustment coming soon')),
+                          );
+                        },
+                      ),
+                      _ControlButton(
+                        icon: Icons.shuffle,
+                        label: 'Shuffle',
+                        onPressed: () {
+                          setState(() {
+                            // Shuffle images in cells
+                            final imageIds = _currentLayout.cells
+                                .map((c) => c.imageId)
+                                .toList()
+                              ..shuffle();
+                            final updatedCells = <LayoutCell>[];
+                            for (var i = 0; i < _currentLayout.cells.length; i++) {
+                              updatedCells.add(
+                                _currentLayout.cells[i].copyWith(imageId: imageIds[i]),
+                              );
+                            }
+                            _currentLayout = _currentLayout.copyWith(cells: updatedCells);
+                          });
+                        },
+                      ),
+                      _ControlButton(
+                        icon: Icons.auto_awesome,
+                        label: 'AI Enhance',
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('AI enhancement coming soon')),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
