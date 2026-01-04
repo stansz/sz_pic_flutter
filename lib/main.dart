@@ -35,7 +35,7 @@ class SZPicApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple,
+            seedColor: Colors.green,
             brightness: Brightness.light,
           ),
           useMaterial3: true,
@@ -56,7 +56,7 @@ class SZPicApp extends StatelessWidget {
         ),
         darkTheme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple,
+            seedColor: Colors.green,
             brightness: Brightness.dark,
           ),
           useMaterial3: true,
