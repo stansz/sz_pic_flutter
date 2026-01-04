@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/services/image_picker_service.dart';
+import '../core/widgets/loading_dialog.dart';
 import 'collage/collage_creator_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +75,8 @@ class HomeScreen extends StatelessWidget {
                         title: 'Create Collage',
                         subtitle: 'Combine photos into beautiful layouts',
                         color: theme.colorScheme.primary,
-                        onTap: () => _navigateToCollageCreator(context),
+                        onTap: _isLoading ? null : () => _navigateToCollageCreator(context),
+                        isLoading: _isLoading,
                       ),
                       const SizedBox(height: 16),
                       _MenuCard(
@@ -102,7 +111,7 @@ class HomeScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  'v1.0.0 • Made with ❤️',
+                  'v0.01 • Made by SZ with ❤️',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurface.withOpacity(0.5),
                   ),
@@ -115,30 +124,77 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void _navigateToCollageCreator(BuildContext context) async {
-    final imagePickerService = context.read<ImagePickerService>();
+  Future<void> _navigateToCollageCreator(BuildContext context) async {
+    if (!mounted) return;
     
-    // Pick images first
-    final images = await imagePickerService.pickMultipleImages();
-    
-    if (images.isEmpty) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No images selected'),
-            duration: Duration(seconds: 2),
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Show loading dialog
+    LoadingDialog.show(
+      context,
+      message: 'Preparing your images...',
+      showProgress: false,
+    );
+
+    try {
+      final imagePickerService = context.read<ImagePickerService>();
+      
+      // Pick images first
+      final images = await imagePickerService.pickMultipleImages();
+      
+      // Hide loading dialog
+      if (mounted) {
+        LoadingDialog.hide(context);
+      }
+      
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      
+      if (images.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No images selected'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => CollageCreatorScreen(images: images),
           ),
         );
       }
-      return;
-    }
-
-    if (context.mounted) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => CollageCreatorScreen(images: images),
-        ),
-      );
+    } catch (e) {
+      // Hide loading dialog on error
+      if (mounted) {
+        LoadingDialog.hide(context);
+      }
+      
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading images: ${e.toString()}'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -164,7 +220,8 @@ class _MenuCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final Color color;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final bool isLoading;
 
   const _MenuCard({
     required this.icon,
@@ -172,6 +229,7 @@ class _MenuCard extends StatelessWidget {
     required this.subtitle,
     required this.color,
     required this.onTap,
+    this.isLoading = false,
   });
 
   @override
@@ -192,11 +250,20 @@ class _MenuCard extends StatelessWidget {
                   color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  size: 32,
-                  color: color,
-                ),
+                child: isLoading
+                    ? SizedBox(
+                        width: 32,
+                        height: 32,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          valueColor: AlwaysStoppedAnimation<Color>(color),
+                        ),
+                      )
+                    : Icon(
+                        icon,
+                        size: 32,
+                        color: color,
+                      ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -219,10 +286,11 @@ class _MenuCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: theme.colorScheme.onSurface.withOpacity(0.3),
-              ),
+              if (!isLoading)
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: theme.colorScheme.onSurface.withOpacity(0.3),
+                ),
             ],
           ),
         ),

@@ -11,7 +11,7 @@
 
 ### Material Design 3
 - `useMaterial3: true`
-- `ColorScheme.fromSeed(seedColor: Colors.deepPurple)`
+- `ColorScheme.fromSeed(seedColor: Colors.green)`
 - Adaptive light/dark themes
 - Elevation and shape system
 - CardThemeData, ElevatedButtonThemeData customization

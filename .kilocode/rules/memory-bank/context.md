@@ -2,18 +2,27 @@
 
 ## Project Status
 **Version**: 1.0.0-alpha  
-**Last Updated**: January 3, 2026  
+**Last Updated**: January 4, 2026  
 **Build Status**: ✅ Compiles and runs successfully on Android
 
 ## Recent Changes
 
-### Current Session (Jan 3, 2026)
+### Current Session (Jan 4, 2026)
+1. **Loading Indicators for Image Processing**: Added comprehensive loading feedback during image selection and processing
+   - Created reusable [`LoadingDialog`](lib/core/widgets/loading_dialog.dart:1) component with progress indicators
+   - Updated [`HomeScreen`](lib/screens/home_screen.dart:1) to StatefulWidget for loading state management
+   - Integrated loading dialog that appears immediately when user taps "Create Collage"
+   - Added visual feedback on the collage button itself with circular progress indicator
+   - Implemented proper error handling and dialog dismissal
+   - Eliminates "frozen app" feeling during image processing
+
+### Previous Session (Jan 3, 2026)
 1. **Export location picker**: Added `file_picker` and prompt for user-selected save directory for PNG exports on mobile/desktop; web still downloads via blob
 2. **Home navigation**: Added AppBar home icon to return to the root screen after exporting; removed redundant bottom home button
 3. **Web collage flow**: Cached picked image bytes for web builds and render with `Image.memory`, ensuring Chrome now waits for layout generation after selection
 4. **Web export support**: Added a download-based export helper that avoids `path_provider` on the web and triggers a PNG download instead of hitting the missing plugin
 
-### Previous Session (Jan 2, 2026)
+### Session Before That (Jan 2, 2026)
 1. **Fixed Critical Build Error**: Removed deprecated `flutter_ffmpeg` package that was causing Gradle namespace build failures
 2. **Confirmed App Launch**: Successfully tested app on Android emulator
 3. **Initialized Memory Bank**: Created comprehensive documentation for future sessions
@@ -37,13 +46,14 @@
 
 ## What's Working Well
 
-- ✅ Image selection from gallery
+- ✅ Image selection from gallery with loading feedback
 - ✅ 4 layout algorithms generating instantly
 - ✅ Layout preview visualization
 - ✅ Collage editor rendering with proper transformations
 - ✅ PNG export with high quality (3x pixel ratio)
 - ✅ Provider state management architecture
 - ✅ Material Design 3 theming
+- ✅ Loading indicators during image processing
 
 ## Known Limitations
 
@@ -76,7 +86,7 @@
 ## Technical Debt to Address
 
 1. Add try-catch blocks throughout for better error handling
-2. Implement loading states for all async operations
+2. Implement loading states for all async operations ✅ (Partially complete - image loading now has loading states)
 3. Add input validation
 4. Fix withOpacity() deprecation warnings (12 instances)
 5. Optimize image loading and memory usage
