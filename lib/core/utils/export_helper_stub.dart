@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-void downloadPng(Uint8List bytes, String filename) {
+void downloadImage(Uint8List bytes, String filename, String mimeType) {
   // Stub implementation for non-web platforms. Should never be called without guarding kIsWeb.
-  throw UnsupportedError('downloadPng is not supported on this platform');
+  throw UnsupportedError('downloadImage is not supported on this platform');
 }
