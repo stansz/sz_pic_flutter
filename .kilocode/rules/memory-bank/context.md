@@ -15,6 +15,10 @@
    - Added visual feedback on the collage button itself with circular progress indicator
    - Implemented proper error handling and dialog dismissal
    - Eliminates "frozen app" feeling during image processing
+2. **Collage export enhancements**: Generalized the export workflow so users can choose between PNG/JPEG and receive clearer feedback.
+   - Introduced `CollageExportFormat` and `_captureCollageBytes` so renders can remain PNG or be re-encoded to JPEG via the `image` package.
+   - Added a bottom sheet with PNG, JPEG, and placeholder PDF options, plus SnackBars that share success or cancellation status.
+   - Reworked `downloadImage` helpers (web implementation plus non-web stub) and kept the native `FilePicker` save dialog so the selected format is written to disk with branded feedback.
 
 ### Previous Session (Jan 3, 2026)
 1. **Export location picker**: Added `file_picker` and prompt for user-selected save directory for PNG exports on mobile/desktop; web still downloads via blob
@@ -74,7 +78,7 @@
 ### Short Term (This Month)
 - Build SQLite database for project storage
 - Create project gallery screen
-- Add JPEG export option
+- Implement PDF export flow to follow up on the placeholder
 - Implement drag-drop for cells
 
 ### Medium Term (Next Month)

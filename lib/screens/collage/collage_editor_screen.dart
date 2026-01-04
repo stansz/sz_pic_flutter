@@ -6,9 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
+import 'package:image/image.dart' as img;
 import '../../core/models/image_item.dart';
 import '../../core/models/collage_models.dart';
 import '../../core/utils/export_helper.dart';
+
+enum CollageExportFormat { png, jpeg }
+
+extension on CollageExportFormat {
+  String get extension => this == CollageExportFormat.png ? 'png' : 'jpg';
+  String get mimeType => this == CollageExportFormat.png ? 'image/png' : 'image/jpeg';
+  String get displayName => this == CollageExportFormat.png ? 'PNG' : 'JPEG';
+}
 
 class CollageEditorScreen extends StatefulWidget {
   final CollageLayout layout;
@@ -44,27 +53,41 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
     }
   }
 
-  Future<void> _exportCollage() async {
+  Future<Uint8List> _captureCollageBytes(CollageExportFormat format) async {
+    final RenderRepaintBoundary boundary =
+        _collageKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    final pngBytes = byteData!.buffer.asUint8List();
+    if (format == CollageExportFormat.png) {
+      return pngBytes;
+    }
+
+    final decoded = img.decodeImage(pngBytes);
+    if (decoded == null) {
+      throw StateError('Unable to decode collage PNG for JPEG export.');
+    }
+
+    return Uint8List.fromList(img.encodeJpg(decoded, quality: 92));
+  }
+
+  Future<void> _exportCollage(CollageExportFormat format) async {
     setState(() {
       _isExporting = true;
     });
 
     try {
-      // Capture the collage as an image
-      final RenderRepaintBoundary boundary =
-          _collageKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      final buffer = byteData!.buffer.asUint8List();
+      final bytes = await _captureCollageBytes(format);
       final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final displayName = format.displayName;
 
       if (kIsWeb) {
-        final filename = 'collage_$timestamp.png';
-        downloadPng(buffer, filename);
+        final filename = 'collage_$timestamp.${format.extension}';
+        downloadImage(bytes, filename, format.mimeType);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Collage download ready: $filename'),
+              content: Text('$displayName collage download ready: $filename'),
               duration: const Duration(seconds: 3),
             ),
           );
@@ -81,23 +104,26 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
       if (selectedDirectory == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Export canceled'),
-              duration: Duration(seconds: 2),
+            SnackBar(
+              content: Text('$displayName export canceled'),
+              duration: const Duration(seconds: 2),
             ),
           );
         }
         return;
       }
 
-      final filePath = p.join(selectedDirectory, 'collage_$timestamp.png');
+      final filePath = p.join(
+        selectedDirectory,
+        'collage_$timestamp.${format.extension}',
+      );
       final file = File(filePath);
-      await file.writeAsBytes(buffer);
+      await file.writeAsBytes(bytes);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Collage saved to: $filePath'),
+            content: Text('$displayName collage saved to: $filePath'),
             duration: const Duration(seconds: 4),
             action: SnackBarAction(
               label: 'OK',
@@ -135,7 +161,7 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
               subtitle: const Text('High quality image'),
               onTap: () {
                 Navigator.pop(context);
-                _exportCollage();
+                _exportCollage(CollageExportFormat.png);
               },
             ),
             ListTile(
@@ -144,9 +170,7 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
               subtitle: const Text('Smaller file size'),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('JPEG export coming soon')),
-                );
+                _exportCollage(CollageExportFormat.jpeg);
               },
             ),
             ListTile(

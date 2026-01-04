@@ -1,11 +1,15 @@
+import 'dart:developer' as developer;
 import 'dart:typed_data';
-import 'dart:html' as html;
+import 'package:web/web.dart';
 
-void downloadPng(Uint8List bytes, String filename) {
-  final blob = html.Blob([bytes], 'image/png');
-  final url = html.Url.createObjectUrlFromBlob(blob);
-  final anchor = html.AnchorElement(href: url)
-    ..setAttribute('download', filename)
+void downloadImage(Uint8List bytes, String filename, String mimeType) {
+  developer.log('downloadImage(web) triggered for $filename', name: 'export_helper_web');
+  // Create Blob from Uint8List using package:web directly
+  final blob = Blob(<BlobPart>[bytes], BlobPropertyBag(type: mimeType));
+  final url = URL.createObjectURL(blob);
+  HTMLAnchorElement()
+    ..download = filename
+    ..href = url
     ..click();
-  html.Url.revokeObjectUrl(url);
+  URL.revokeObjectURL(url);
 }
