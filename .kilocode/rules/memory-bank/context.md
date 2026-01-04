@@ -8,14 +8,22 @@
 ## Recent Changes
 
 ### Current Session (Jan 4, 2026)
-1. **Loading Indicators for Image Processing**: Added comprehensive loading feedback during image selection and processing
+1. **Freestyle Editor Enhancement**: Created a new interactive editor for freestyle layouts with full customization capabilities
+   - Created [`FreestyleEditorScreen`](lib/screens/collage/freestyle_editor_screen.dart:1) with drag, resize, and rotate functionality
+   - Users can tap to select images, drag to reposition, use corner handles to resize, and use rotation handle to rotate
+   - Added layer management (bring to front/send to back) via layer options button
+   - Includes shuffle and reset controls for quick adjustments
+   - Maintains export functionality (PNG/JPEG) from the regular editor
+   - Updated [`CollageCreatorScreen`](lib/screens/collage/collage_creator_screen.dart:1) to navigate to FreestyleEditorScreen when freestyle layout is selected
+   - Other layouts (grid, masonry, template) continue to use the regular CollageEditorScreen
+2. **Loading Indicators for Image Processing**: Added comprehensive loading feedback during image selection and processing
    - Created reusable [`LoadingDialog`](lib/core/widgets/loading_dialog.dart:1) component with progress indicators
    - Updated [`HomeScreen`](lib/screens/home_screen.dart:1) to StatefulWidget for loading state management
    - Integrated loading dialog that appears immediately when user taps "Create Collage"
    - Added visual feedback on the collage button itself with circular progress indicator
    - Implemented proper error handling and dialog dismissal
    - Eliminates "frozen app" feeling during image processing
-2. **Collage export enhancements**: Generalized the export workflow so users can choose between PNG/JPEG and receive clearer feedback.
+3. **Collage export enhancements**: Generalized the export workflow so users can choose between PNG/JPEG and receive clearer feedback.
    - Introduced `CollageExportFormat` and `_captureCollageBytes` so renders can remain PNG or be re-encoded to JPEG via the `image` package.
    - Added a bottom sheet with PNG, JPEG, and placeholder PDF options, plus SnackBars that share success or cancellation status.
    - Reworked `downloadImage` helpers (web implementation plus non-web stub) and kept the native `FilePicker` save dialog so the selected format is written to disk with branded feedback.
@@ -66,7 +74,7 @@
 3. **Fixed Canvas Size**: Editor uses 1000x1000 canvas which may not scale well for all aspect ratios
 4. **AI Parsing**: Regex-based JSON extraction from AI responses can fail with complex outputs
 5. **No Persistence**: Projects aren't saved between sessions
-6. **Limited Editing**: Can't drag/resize/rotate cells yet
+6. **Limited Editing**: Can't drag/resize/rotate cells in regular editor (freestyle editor now supports this)
 
 ## Next Steps
 
@@ -79,7 +87,7 @@
 - Build SQLite database for project storage
 - Create project gallery screen
 - Implement PDF export flow to follow up on the placeholder
-- Implement drag-drop for cells
+- Implement drag-drop for cells in regular editor (freestyle editor already has this)
 
 ### Medium Term (Next Month)
 - Start slideshow creator implementation
