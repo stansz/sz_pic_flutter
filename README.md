@@ -36,12 +36,12 @@ SZ Pic is a cross-platform mobile application that combines powerful collage and
   - Grid: Evenly distributed cells
   - Masonry: Pinterest-style cascading
   - Template: Pre-designed 2-5 image layouts
-  - Freestyle: Random positioning with rotation
+  - Freestyle: Interactive editor with drag, resize, and rotate
 - ✅ **Image Selection**: Multiple images from gallery or camera
 - ✅ **AI Suggestions**: Get layout recommendations based on image count
-- ✅ **Export Options**: PNG (high quality)
-- 🚧 **Customization**: Background colors, spacing, aspect ratios
-- 🚧 **Advanced Editing**: Drag-drop, resize, rotate cells
+- ✅ **Export Options**: PNG and JPEG (high quality)
+- ✅ **Freestyle Editor**: Full interactive editing with drag, resize, rotate, and layer management
+- 🚧 **Customization**: Background colors, spacing, aspect ratios (for other layouts)
 
 ### AI Integration
 - ✅ **Dual Provider Support**
@@ -112,6 +112,9 @@ Choose from 4 layout algorithms with visual previews.
 ### Collage Editor
 Edit and customize your collage with intuitive controls.
 
+### Freestyle Editor
+Interactive editor with drag, resize, rotate, and layer management for freestyle layouts.
+
 ### AI Suggestions
 Get AI-powered layout recommendations in seconds.
 
@@ -137,7 +140,8 @@ lib/
 │   ├── home_screen.dart
 │   └── collage/
 │       ├── collage_creator_screen.dart
-│       └── collage_editor_screen.dart
+│       ├── collage_editor_screen.dart
+│       └── freestyle_editor_screen.dart
 └── main.dart             # App entry point
 ```
 
@@ -215,10 +219,10 @@ theme: ThemeData(
 - ✅ PNG export
 
 ### Version 1.1 (Next)
-- 🚧 Advanced collage editing
+- ✅ Freestyle editor with interactive controls
 - 🚧 Settings screen
 - 🚧 Project management
-- 🚧 JPEG/PDF export
+- 🚧 PDF export
 
 ### Version 2.0 (Future)
 - ⏳ Slideshow creator

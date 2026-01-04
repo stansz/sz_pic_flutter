@@ -80,7 +80,19 @@ flutter run -d <device-id>
 2. Select 2-5 images from your gallery
 3. Choose a layout style (Grid, Masonry, Template, or Freestyle)
 4. Edit and customize your collage
-5. Export as PNG
+5. Export as PNG or JPEG
+
+### Try the Freestyle Editor
+1. Select **"Freestyle Layout"** from the layout options
+2. The freestyle editor will open with interactive controls
+3. **Tap** any image to select it (shows blue border)
+4. **Drag** images to reposition them on the canvas
+5. **Resize** using the blue corner handle (bottom-right)
+6. **Rotate** using the green rotation handle (top center)
+7. Use the **Layers** button to bring images to front or send to back
+8. Use **Shuffle** to randomly reassign images
+9. Use **Reset** to restore the original layout
+10. Export your customized collage
 
 ### Test AI Features
 1. In the collage creator, tap the **AI suggestions** button (✨ icon)
@@ -154,7 +166,8 @@ lib/
 │   ├── home_screen.dart
 │   └── collage/
 │       ├── collage_creator_screen.dart
-│       └── collage_editor_screen.dart
+│       ├── collage_editor_screen.dart
+│       └── freestyle_editor_screen.dart
 └── main.dart           # App entry point
 ```
 
@@ -233,7 +246,8 @@ Once you have the app running:
 | Layout generation | < 500ms |
 | First AI request | 10-20 seconds |
 | Subsequent AI requests | 2-5 seconds |
-| Collage export (PNG) | 1-3 seconds |
+| Collage export (PNG/JPEG) | 1-3 seconds |
+| Freestyle editor interactions | < 100ms |
 
 ---
 

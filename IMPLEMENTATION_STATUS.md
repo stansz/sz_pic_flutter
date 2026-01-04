@@ -36,6 +36,7 @@
 - ✅ [`HomeScreen`](lib/screens/home_screen.dart) - Main navigation menu
 - ✅ [`CollageCreatorScreen`](lib/screens/collage/collage_creator_screen.dart) - Layout selection with AI suggestions
 - ✅ [`CollageEditorScreen`](lib/screens/collage/collage_editor_screen.dart) - Collage editing and export
+- ✅ [`FreestyleEditorScreen`](lib/screens/collage/freestyle_editor_screen.dart) - Interactive freestyle editor with drag, resize, rotate, and layer management
 
 ### AI Integration
 - ✅ Dual AI provider support (Ollama + OpenRouter)
@@ -46,8 +47,10 @@
 
 ### Export Features
 - ✅ PNG export (high quality)
+- ✅ JPEG export (smaller file size)
 - ✅ RepaintBoundary for canvas capture
-- ✅ File system storage
+- ✅ File system storage with user-selected directory
+- ✅ Web download support
 
 ## 🚧 In Progress / Partially Complete
 
@@ -56,11 +59,11 @@
 - 🚧 Aspect ratio adjustment (placeholder UI exists)
 - 🚧 Spacing controls (placeholder UI exists)
 - ✅ Image shuffling (complete)
-- 🚧 Drag-and-drop cell editing
-- 🚧 Cell transformation (resize, rotate, reposition)
+- ✅ Freestyle editor with full interactive controls (drag, resize, rotate, layer management)
+- 🚧 Drag-and-drop cell editing for other layouts (grid, masonry, template)
 
 ### Export Features
-- 🚧 JPEG export (planned)
+- ✅ JPEG export (complete)
 - 🚧 PDF export (planned)
 - 🚧 Share functionality
 
@@ -154,7 +157,7 @@
 1. Implement background color picker in collage editor
 2. Add aspect ratio adjustment controls
 3. Add spacing adjustment controls
-4. Implement cell drag-and-drop
+4. Implement cell drag-and-drop for grid, masonry, and template layouts
 5. Add undo/redo functionality
 
 ### Phase 2: Slideshow Creator (Medium Priority)
@@ -188,7 +191,8 @@
 - ✅ Layout generation works
 - ✅ Layout preview displays correctly
 - ✅ Collage editor renders images
-- ✅ Export saves to file system
+- ✅ Freestyle editor with interactive controls (drag, resize, rotate, layers)
+- ✅ Export saves to file system (PNG and JPEG)
 - ✅ Fixed deprecated flutter_ffmpeg build issue
 
 ### Automated Testing
@@ -258,6 +262,6 @@ The app will connect to Ollama at `http://localhost:11434` by default.
 
 ---
 
-**Last Updated**: January 2, 2026  
-**Version**: 1.0.0-alpha  
-**Status**: Development - Core features functional, AI integration working
+**Last Updated**: January 4, 2026
+**Version**: 1.0.0-alpha
+**Status**: Development - Core features functional, AI integration working, Freestyle editor complete

@@ -6,6 +6,7 @@ import '../../core/models/ai_models.dart';
 import '../../core/services/collage_engine.dart';
 import '../../core/services/ai_provider.dart';
 import 'collage_editor_screen.dart';
+import 'freestyle_editor_screen.dart';
 
 class CollageCreatorScreen extends StatefulWidget {
   final List<ImageItem> images;
@@ -148,14 +149,26 @@ class _CollageCreatorScreenState extends State<CollageCreatorScreen> {
     final imageIds = widget.images.map((img) => img.id).toList();
     final layoutWithImages = collageEngine.assignImagesToLayout(layout, imageIds);
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => CollageEditorScreen(
-          layout: layoutWithImages,
-          images: widget.images,
+    // Navigate to FreestyleEditorScreen for freestyle layout, otherwise CollageEditorScreen
+    if (layout.type == LayoutType.freestyle) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => FreestyleEditorScreen(
+            layout: layoutWithImages,
+            images: widget.images,
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => CollageEditorScreen(
+            layout: layoutWithImages,
+            images: widget.images,
+          ),
+        ),
+      );
+    }
   }
 
   @override
