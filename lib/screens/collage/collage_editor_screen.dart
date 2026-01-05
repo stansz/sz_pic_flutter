@@ -10,6 +10,7 @@ import 'package:image/image.dart' as img;
 import '../../core/models/image_item.dart';
 import '../../core/models/collage_models.dart';
 import '../../core/utils/export_helper.dart';
+import '../../core/widgets/color_picker_dialog.dart';
 
 enum CollageExportFormat { png, jpeg }
 
@@ -148,6 +149,19 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
     }
   }
 
+  void _showColorPicker() async {
+    final newColor = await ColorPickerDialog.show(
+      context,
+      _currentLayout.backgroundColor,
+    );
+
+    if (newColor != null && mounted) {
+      setState(() {
+        _currentLayout = _currentLayout.copyWith(backgroundColor: newColor);
+      });
+    }
+  }
+
   void _showExportOptions() {
     showModalBottomSheet(
       context: context,
@@ -201,12 +215,7 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
           IconButton(
             icon: const Icon(Icons.palette),
             tooltip: 'Change Background',
-            onPressed: () {
-              // TODO: Implement background color picker
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Background color picker coming soon')),
-              );
-            },
+            onPressed: _showColorPicker,
           ),
           IconButton(
             icon: _isExporting

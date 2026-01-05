@@ -10,6 +10,7 @@ import 'package:image/image.dart' as img;
 import '../../core/models/image_item.dart';
 import '../../core/models/collage_models.dart';
 import '../../core/utils/export_helper.dart';
+import '../../core/widgets/color_picker_dialog.dart';
 
 enum CollageExportFormat { png, jpeg }
 
@@ -153,6 +154,19 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
     } finally {
       setState(() {
         _isExporting = false;
+      });
+    }
+  }
+
+  void _showColorPicker() async {
+    final newColor = await ColorPickerDialog.show(
+      context,
+      _currentLayout.backgroundColor,
+    );
+
+    if (newColor != null && mounted) {
+      setState(() {
+        _currentLayout = _currentLayout.copyWith(backgroundColor: newColor);
       });
     }
   }
@@ -375,13 +389,7 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
           IconButton(
             icon: const Icon(Icons.palette),
             tooltip: 'Change Background',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Background color picker coming soon'),
-                ),
-              );
-            },
+            onPressed: _showColorPicker,
           ),
           IconButton(
             icon: _isExporting

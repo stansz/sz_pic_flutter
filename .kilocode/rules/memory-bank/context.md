@@ -7,6 +7,18 @@
 
 ## Recent Changes
 
+### Current Session (Jan 5, 2026)
+1. **Background Color Picker Implementation**: Added functional background color picker to both collage editors
+   - Created reusable [`ColorPickerDialog`](lib/core/widgets/color_picker_dialog.dart:1) widget with preset colors and custom HSV sliders
+   - Integrated into [`CollageEditorScreen`](lib/screens/collage/collage_editor_screen.dart:1) - palette icon now opens color picker
+   - Integrated into [`FreestyleEditorScreen`](lib/screens/collage/freestyle_editor_screen.dart:1) - palette icon now opens color picker
+   - Features 20 preset colors in a grid with visual selection indicators
+   - Custom color picker with Hue, Saturation, and Brightness sliders
+   - Live color preview with hex code display
+   - Automatic text contrast calculation for readability
+   - Selected color immediately updates collage background
+   - Background color is preserved when exporting collage
+
 ### Previous Session (Jan 4, 2026)
 1. **Freestyle Editor Enhancement**: Created a new interactive editor for freestyle layouts with full customization capabilities
    - Created [`FreestyleEditorScreen`](lib/screens/collage/freestyle_editor_screen.dart:1) with drag, resize, and rotate functionality
@@ -74,6 +86,7 @@
 - ✅ Freestyle editor with full drag/resize/rotate/crop capabilities
 - ✅ PNG and JPEG export with user-selected save location
 - ✅ Free crop mode for precise image positioning within cells
+- ✅ Background color picker with preset and custom colors
 
 ## Known Limitations
 
@@ -89,7 +102,6 @@
 
 ### Immediate (This Week)
 - Implement Settings screen with AI provider configuration
-- Add background color picker to collage editor
 - Implement aspect ratio selector
 
 ### Short Term (This Month)
