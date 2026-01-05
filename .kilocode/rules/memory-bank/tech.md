@@ -30,9 +30,11 @@ Located in `/Users/sz/StudioProjects/sz_pic_flutter/pubspec.yaml`
 - **image_picker ^1.0.7**: Gallery and camera access
   - `ImageSource.gallery`, `ImageSource.camera`
   - Multiple image selection support
+  - Used in [`ImagePickerService`](lib/core/services/image_picker_service.dart:1)
 - **image ^4.1.7**: Image processing and metadata extraction
   - Decode images, get dimensions
-  - Future: Image manipulation
+  - **JPEG Encoding**: Used in export feature to convert PNG to JPEG with quality control
+  - `img.encodeJpg(decoded, quality: 92)` for collage exports
 - **photo_view ^0.14.0**: Image viewer widget (planned usage)
 - **cached_network_image ^3.3.1**: Network image caching (planned)
 
@@ -54,12 +56,19 @@ Located in `/Users/sz/StudioProjects/sz_pic_flutter/pubspec.yaml`
 - **path ^1.8.3**: Path manipulation utilities
 
 ### File Handling
-- **file_picker ^10.3.8**: Directory and file picker via native dialogs
-  - Used: Prompting user to choose export folder for PNG saves
+- **file_picker ^8.0.0+1**: Directory and file picker via native dialogs
+  - Used: `FilePicker.platform.getDirectoryPath()` for export location selection
+  - Prompting user to choose export folder for PNG/JPEG saves
+  - Native save dialogs on Android/iOS/Desktop
 - **permission_handler ^11.2.0**: Runtime permissions
   - Planned: Request camera, storage permissions
 
 ### UI/UX
+- **LoadingDialog** (custom widget): Reusable loading UI component
+  - Located in [`lib/core/widgets/loading_dialog.dart`](lib/core/widgets/loading_dialog.dart:1)
+  - Shows circular progress indicator with message
+  - Optional linear progress bar for multi-step operations
+  - Static `show()` and `hide()` methods for ease of use
 - **flutter_staggered_grid_view ^0.7.0**: Advanced grid layouts
   - Planned: Project gallery, image selection
 - **shimmer ^3.0.0**: Loading animations
@@ -143,6 +152,7 @@ Located in `/Users/sz/StudioProjects/sz_pic_flutter/pubspec.yaml`
   - INTERNET
 - **Namespace**: com.example.sz_pic_flutter
 - **Build**: Kotlin-based Gradle scripts
+- **Status**: ✅ Fully functional and tested on Android emulator
 
 ### iOS (Planned)
 - **Deployment Target**: iOS 12.0+
@@ -151,10 +161,16 @@ Located in `/Users/sz/StudioProjects/sz_pic_flutter/pubspec.yaml`
   - NSCameraUsageDescription
 - **Swift**: 5.0+
 
-### Web (Planned)
+### Web
 - **Renderer**: CanvasKit (better graphics)
-- **PWA**: Progressive Web App support
-- **CORS**: Handle image loading
+- **Image Handling**: Uses `Image.memory()` with cached bytes
+  - Web builds cache `Uint8List` in `ImageItem.bytes` field
+  - Avoids file system access limitations
+- **Export**: Blob-based download via [`downloadImage()`](lib/core/utils/export_helper_web.dart:1)
+  - Creates anchor element with download attribute
+  - Triggers automatic download with timestamp filename
+- **PWA**: Progressive Web App support (planned)
+- **Status**: Basic functionality implemented, needs testing
 
 ## Development Environment
 
