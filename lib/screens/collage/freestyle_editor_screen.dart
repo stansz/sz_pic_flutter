@@ -15,7 +15,8 @@ enum CollageExportFormat { png, jpeg }
 
 extension on CollageExportFormat {
   String get extension => this == CollageExportFormat.png ? 'png' : 'jpg';
-  String get mimeType => this == CollageExportFormat.png ? 'image/png' : 'image/jpeg';
+  String get mimeType =>
+      this == CollageExportFormat.png ? 'image/png' : 'image/jpeg';
   String get displayName => this == CollageExportFormat.png ? 'PNG' : 'JPEG';
 }
 
@@ -42,8 +43,6 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
   Offset? _cellStartOffset;
   double? _resizeStartDistance;
   Size? _cellStartSize;
-  double? _rotateStartAngle;
-  double? _cellStartRotation;
 
   @override
   void initState() {
@@ -131,10 +130,7 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
           SnackBar(
             content: Text('$displayName collage saved to: $filePath'),
             duration: const Duration(seconds: 4),
-            action: SnackBarAction(
-              label: 'OK',
-              onPressed: () {},
-            ),
+            action: SnackBarAction(label: 'OK', onPressed: () {}),
           ),
         );
       }
@@ -190,8 +186,14 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
     if (cellIndex == -1) return;
 
     final cell = _currentLayout.cells[cellIndex];
-    final newX = (newPosition.dx / canvasSize.width).clamp(0.0, 1.0 - cell.width);
-    final newY = (newPosition.dy / canvasSize.height).clamp(0.0, 1.0 - cell.height);
+    final newX = (newPosition.dx / canvasSize.width).clamp(
+      0.0,
+      1.0 - cell.width,
+    );
+    final newY = (newPosition.dy / canvasSize.height).clamp(
+      0.0,
+      1.0 - cell.height,
+    );
 
     final updatedCell = cell.copyWith(x: newX, y: newY);
     final updatedCells = List<LayoutCell>.from(_currentLayout.cells);
@@ -207,8 +209,14 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
     if (cellIndex == -1) return;
 
     final cell = _currentLayout.cells[cellIndex];
-    final newWidth = (newSize.width / canvasSize.width).clamp(0.1, 1.0 - cell.x);
-    final newHeight = (newSize.height / canvasSize.height).clamp(0.1, 1.0 - cell.y);
+    final newWidth = (newSize.width / canvasSize.width).clamp(
+      0.1,
+      1.0 - cell.x,
+    );
+    final newHeight = (newSize.height / canvasSize.height).clamp(
+      0.1,
+      1.0 - cell.y,
+    );
 
     final updatedCell = cell.copyWith(width: newWidth, height: newHeight);
     final updatedCells = List<LayoutCell>.from(_currentLayout.cells);
@@ -270,18 +278,13 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
         title: const Text('Freestyle Editor'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.layers),
-            tooltip: 'Layer Options',
-            onPressed: _selectedCellId != null
-                ? () => _showLayerOptions(_selectedCellId!)
-                : null,
-          ),
-          IconButton(
             icon: const Icon(Icons.palette),
             tooltip: 'Change Background',
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Background color picker coming soon')),
+                const SnackBar(
+                  content: Text('Background color picker coming soon'),
+                ),
               );
             },
           ),
@@ -321,7 +324,7 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Tap to select • Drag to move • Drag corners to resize • Drag handle to rotate',
+                    'Tap to select • Drag to move • Drag corners to resize • Use rotation control below',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onPrimaryContainer,
                     ),
@@ -350,7 +353,10 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
                   ),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final canvasSize = Size(constraints.maxWidth, constraints.maxHeight);
+                      final canvasSize = Size(
+                        constraints.maxWidth,
+                        constraints.maxHeight,
+                      );
 
                       return RepaintBoundary(
                         key: _collageKey,
@@ -383,10 +389,18 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
                                   });
                                 },
                                 onDragUpdate: (details) {
-                                  if (_dragStartOffset != null && _cellStartOffset != null) {
-                                    final delta = details.globalPosition - _dragStartOffset!;
-                                    final newPosition = _cellStartOffset! + delta;
-                                    _updateCellPosition(cell.id, newPosition, canvasSize);
+                                  if (_dragStartOffset != null &&
+                                      _cellStartOffset != null) {
+                                    final delta =
+                                        details.globalPosition -
+                                        _dragStartOffset!;
+                                    final newPosition =
+                                        _cellStartOffset! + delta;
+                                    _updateCellPosition(
+                                      cell.id,
+                                      newPosition,
+                                      canvasSize,
+                                    );
                                   }
                                 },
                                 onDragEnd: (details) {
@@ -398,7 +412,8 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
                                 onResizeStart: (details) {
                                   setState(() {
                                     _selectedCellId = cell.id;
-                                    _resizeStartDistance = details.globalPosition.distance;
+                                    _resizeStartDistance =
+                                        details.globalPosition.distance;
                                     _cellStartSize = Size(
                                       cell.width * canvasSize.width,
                                       cell.height * canvasSize.height,
@@ -406,41 +421,27 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
                                   });
                                 },
                                 onResizeUpdate: (details) {
-                                  if (_resizeStartDistance != null && _cellStartSize != null) {
-                                    final currentDistance = details.globalPosition.distance;
-                                    final scale = currentDistance / _resizeStartDistance!;
+                                  if (_resizeStartDistance != null &&
+                                      _cellStartSize != null) {
+                                    final currentDistance =
+                                        details.globalPosition.distance;
+                                    final scale =
+                                        currentDistance / _resizeStartDistance!;
                                     final newSize = Size(
                                       _cellStartSize!.width * scale,
                                       _cellStartSize!.height * scale,
                                     );
-                                    _updateCellSize(cell.id, newSize, canvasSize);
+                                    _updateCellSize(
+                                      cell.id,
+                                      newSize,
+                                      canvasSize,
+                                    );
                                   }
                                 },
                                 onResizeEnd: (details) {
                                   setState(() {
                                     _resizeStartDistance = null;
                                     _cellStartSize = null;
-                                  });
-                                },
-                                onRotateStart: (details) {
-                                  setState(() {
-                                    _selectedCellId = cell.id;
-                                    _rotateStartAngle = details.globalPosition.direction;
-                                    _cellStartRotation = cell.rotation;
-                                  });
-                                },
-                                onRotateUpdate: (details) {
-                                  if (_rotateStartAngle != null && _cellStartRotation != null) {
-                                    final currentAngle = details.globalPosition.direction;
-                                    final angleDelta = (currentAngle - _rotateStartAngle!) * 180 / math.pi;
-                                    final newRotation = _cellStartRotation! + angleDelta;
-                                    _updateCellRotation(cell.id, newRotation);
-                                  }
-                                },
-                                onRotateEnd: (details) {
-                                  setState(() {
-                                    _rotateStartAngle = null;
-                                    _cellStartRotation = null;
                                   });
                                 },
                               );
@@ -470,25 +471,35 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              child: Wrap(
+                alignment: WrapAlignment.spaceEvenly,
+                spacing: 12,
+                runSpacing: 8,
                 children: [
+                  _ControlButton(
+                    icon: Icons.rotate_right,
+                    label: 'Rotate',
+                    onPressed: _showRotationOptions,
+                  ),
                   _ControlButton(
                     icon: Icons.shuffle,
                     label: 'Shuffle',
                     onPressed: () {
                       setState(() {
-                        final imageIds = _currentLayout.cells
-                            .map((c) => c.imageId)
-                            .toList()
-                          ..shuffle();
+                        final imageIds =
+                            _currentLayout.cells.map((c) => c.imageId).toList()
+                              ..shuffle();
                         final updatedCells = <LayoutCell>[];
                         for (var i = 0; i < _currentLayout.cells.length; i++) {
                           updatedCells.add(
-                            _currentLayout.cells[i].copyWith(imageId: imageIds[i]),
+                            _currentLayout.cells[i].copyWith(
+                              imageId: imageIds[i],
+                            ),
                           );
                         }
-                        _currentLayout = _currentLayout.copyWith(cells: updatedCells);
+                        _currentLayout = _currentLayout.copyWith(
+                          cells: updatedCells,
+                        );
                       });
                     },
                   ),
@@ -503,11 +514,28 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
                     },
                   ),
                   _ControlButton(
+                    icon: Icons.layers,
+                    label: 'Layer',
+                    onPressed: () {
+                      if (_selectedCellId == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Select a cell to adjust layers'),
+                          ),
+                        );
+                        return;
+                      }
+                      _showLayerOptions(_selectedCellId!);
+                    },
+                  ),
+                  _ControlButton(
                     icon: Icons.auto_awesome,
                     label: 'AI Enhance',
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('AI enhancement coming soon')),
+                        const SnackBar(
+                          content: Text('AI enhancement coming soon'),
+                        ),
                       );
                     },
                   ),
@@ -548,6 +576,68 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
       ),
     );
   }
+
+  void _showRotationOptions() {
+    if (_selectedCellId == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Select a cell to rotate')));
+      return;
+    }
+
+    final cell = _currentLayout.cells.firstWhere(
+      (c) => c.id == _selectedCellId,
+      orElse: () => _currentLayout.cells.first,
+    );
+    final theme = Theme.of(context);
+    double sliderValue = (cell.rotation % 360 + 360) % 360;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Rotation', style: theme.textTheme.titleMedium),
+                const SizedBox(height: 12),
+                Slider(
+                  min: 0,
+                  max: 360,
+                  divisions: 360,
+                  value: sliderValue,
+                  label: '${sliderValue.toStringAsFixed(0)}°',
+                  onChanged: (value) {
+                    setModalState(() => sliderValue = value);
+                    _updateCellRotation(_selectedCellId!, value);
+                  },
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${sliderValue.toStringAsFixed(0)}°',
+                      style: theme.textTheme.bodyLarge,
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setModalState(() => sliderValue = 0);
+                        _updateCellRotation(_selectedCellId!, 0);
+                      },
+                      child: const Text('Reset'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _FreestyleCell extends StatelessWidget {
@@ -562,9 +652,6 @@ class _FreestyleCell extends StatelessWidget {
   final Function(DragStartDetails) onResizeStart;
   final Function(DragUpdateDetails) onResizeUpdate;
   final Function(DragEndDetails) onResizeEnd;
-  final Function(DragStartDetails) onRotateStart;
-  final Function(DragUpdateDetails) onRotateUpdate;
-  final Function(DragEndDetails) onRotateEnd;
 
   const _FreestyleCell({
     required this.cell,
@@ -578,9 +665,6 @@ class _FreestyleCell extends StatelessWidget {
     required this.onResizeStart,
     required this.onResizeUpdate,
     required this.onResizeEnd,
-    required this.onRotateStart,
-    required this.onRotateUpdate,
-    required this.onRotateEnd,
   });
 
   @override
@@ -616,22 +700,26 @@ class _FreestyleCell extends StatelessWidget {
                   scale: cell.scale,
                   child: image != null
                       ? (kIsWeb && image!.bytes != null
-                          ? Image.memory(
-                              image!.bytes!,
-                              fit: BoxFit.cover,
-                              width: cellWidth,
-                              height: cellHeight,
-                            )
-                          : Image.file(
-                              File(image!.path),
-                              fit: BoxFit.cover,
-                              width: cellWidth,
-                              height: cellHeight,
-                            ))
+                            ? Image.memory(
+                                image!.bytes!,
+                                fit: BoxFit.cover,
+                                width: cellWidth,
+                                height: cellHeight,
+                              )
+                            : Image.file(
+                                File(image!.path),
+                                fit: BoxFit.cover,
+                                width: cellWidth,
+                                height: cellHeight,
+                              ))
                       : Container(
                           color: Colors.grey[300],
                           child: const Center(
-                            child: Icon(Icons.image, size: 48, color: Colors.grey),
+                            child: Icon(
+                              Icons.image,
+                              size: 48,
+                              color: Colors.grey,
+                            ),
                           ),
                         ),
                 ),
@@ -661,42 +749,6 @@ class _FreestyleCell extends StatelessWidget {
                         color: Colors.white,
                       ),
                     ),
-                  ),
-                ),
-
-                // Rotation handle (top center)
-                Positioned(
-                  top: -30,
-                  left: cellWidth / 2 - 12,
-                  child: GestureDetector(
-                    onPanStart: onRotateStart,
-                    onPanUpdate: onRotateUpdate,
-                    onPanEnd: onRotateEnd,
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: const Icon(
-                        Icons.rotate_right,
-                        size: 14,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Rotation line
-                Positioned(
-                  top: -30,
-                  left: cellWidth / 2 - 1,
-                  child: Container(
-                    width: 2,
-                    height: 30,
-                    color: Colors.green,
                   ),
                 ),
               ],
@@ -733,10 +785,7 @@ class _ControlButton extends StatelessWidget {
           children: [
             Icon(icon, color: theme.colorScheme.primary),
             const SizedBox(height: 4),
-            Text(
-              label,
-              style: theme.textTheme.bodySmall,
-            ),
+            Text(label, style: theme.textTheme.bodySmall),
           ],
         ),
       ),
