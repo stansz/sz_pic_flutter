@@ -1,18 +1,20 @@
 # Current Context
 
 ## Project Status
-**Version**: 1.0.0-alpha  
-**Last Updated**: January 4, 2026  
+**Version**: 1.0.0-alpha
+**Last Updated**: January 5, 2026
 **Build Status**: ✅ Compiles and runs successfully on Android
 
 ## Recent Changes
 
-### Current Session (Jan 4, 2026)
+### Previous Session (Jan 4, 2026)
 1. **Freestyle Editor Enhancement**: Created a new interactive editor for freestyle layouts with full customization capabilities
    - Created [`FreestyleEditorScreen`](lib/screens/collage/freestyle_editor_screen.dart:1) with drag, resize, and rotate functionality
    - Users can tap to select images, drag to reposition, use corner handles to resize, and use rotation handle to rotate
    - Added layer management (bring to front/send to back) via layer options button
-   - Includes shuffle and reset controls for quick adjustments
+   - Includes shuffle, reset, and free crop controls for quick adjustments
+   - Free Crop Mode: Advanced image cropping within cells with pan, zoom, and corner-based resize
+   - Full-screen crop dialog for precise adjustments
    - Maintains export functionality (PNG/JPEG) from the regular editor
    - Updated [`CollageCreatorScreen`](lib/screens/collage/collage_creator_screen.dart:1) to navigate to FreestyleEditorScreen when freestyle layout is selected
    - Other layouts (grid, masonry, template) continue to use the regular CollageEditorScreen
@@ -23,10 +25,13 @@
    - Added visual feedback on the collage button itself with circular progress indicator
    - Implemented proper error handling and dialog dismissal
    - Eliminates "frozen app" feeling during image processing
-3. **Collage export enhancements**: Generalized the export workflow so users can choose between PNG/JPEG and receive clearer feedback.
-   - Introduced `CollageExportFormat` and `_captureCollageBytes` so renders can remain PNG or be re-encoded to JPEG via the `image` package.
-   - Added a bottom sheet with PNG, JPEG, and placeholder PDF options, plus SnackBars that share success or cancellation status.
-   - Reworked `downloadImage` helpers (web implementation plus non-web stub) and kept the native `FilePicker` save dialog so the selected format is written to disk with branded feedback.
+3. **Collage Export Enhancements**: Generalized the export workflow so users can choose between PNG/JPEG and receive clearer feedback
+   - Introduced [`CollageExportFormat`](lib/screens/collage/collage_editor_screen.dart:14) enum and `_captureCollageBytes` method
+   - Renders remain PNG internally, re-encoded to JPEG via the `image` package when needed
+   - Added bottom sheet with PNG, JPEG, and placeholder PDF options in both editors
+   - SnackBars provide success or cancellation status feedback
+   - Reworked `downloadImage` helpers (web implementation plus non-web stub)
+   - Native `FilePicker` save dialog allows users to choose export location
 
 ### Previous Session (Jan 3, 2026)
 1. **Export location picker**: Added `file_picker` and prompt for user-selected save directory for PNG exports on mobile/desktop; web still downloads via blob
@@ -66,6 +71,9 @@
 - ✅ Provider state management architecture
 - ✅ Material Design 3 theming
 - ✅ Loading indicators during image processing
+- ✅ Freestyle editor with full drag/resize/rotate/crop capabilities
+- ✅ PNG and JPEG export with user-selected save location
+- ✅ Free crop mode for precise image positioning within cells
 
 ## Known Limitations
 
@@ -74,7 +82,8 @@
 3. **Fixed Canvas Size**: Editor uses 1000x1000 canvas which may not scale well for all aspect ratios
 4. **AI Parsing**: Regex-based JSON extraction from AI responses can fail with complex outputs
 5. **No Persistence**: Projects aren't saved between sessions
-6. **Limited Editing**: Can't drag/resize/rotate cells in regular editor (freestyle editor now supports this)
+6. **Limited Editing**: Can't drag/resize/rotate cells in regular editor (freestyle editor fully supports this)
+7. **Image Crop in Regular Editor**: Grid/Masonry/Template layouts don't have advanced crop features yet
 
 ## Next Steps
 

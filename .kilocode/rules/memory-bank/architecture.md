@@ -45,6 +45,10 @@ Represents an image with metadata.
 - Represents a single image position in collage
 - Uses normalized coordinates (0-1 range for x, y, width, height)
 - Supports rotation (-180 to 180 degrees) and scale
+- **Free Crop Support**: Added `imageOffsetX` and `imageOffsetY` properties (normalized -0.5 to 0.5)
+  - Allows image repositioning within cell boundaries
+  - Independent of cell position/size
+  - Used for precise image cropping and positioning
 - Each cell can reference an imageId
 
 **CollageLayout**

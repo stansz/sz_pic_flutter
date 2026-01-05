@@ -289,16 +289,34 @@ class CollageEngine {
   }) {
     final cells = <LayoutCell>[];
 
+    double cellMinSize = 0.2;
+    double cellMaxSize = 0.4;
+
+    if (imageCount == 1) {
+      cellMinSize = cellMaxSize = 1.0 - padding * 2;
+    } else if (imageCount == 2) {
+      cellMinSize = 0.5;
+      cellMaxSize = 0.8;
+    } else if (imageCount == 3) {
+      cellMinSize = 0.35;
+      cellMaxSize = 0.65;
+    } else if (imageCount == 4) {
+      cellMinSize = 0.3;
+      cellMaxSize = 0.55;
+    }
+
+    cellMinSize = cellMinSize.clamp(0.1, 1.0 - padding * 2);
+    cellMaxSize = cellMaxSize.clamp(cellMinSize, 1.0 - padding * 2);
+
     for (var i = 0; i < imageCount; i++) {
-      // Random size (20-40% of canvas)
-      final width = 0.2 + _random.nextDouble() * 0.2;
-      final height = 0.2 + _random.nextDouble() * 0.2;
+      final width = cellMinSize + _random.nextDouble() * (cellMaxSize - cellMinSize);
+      final height = cellMinSize + _random.nextDouble() * (cellMaxSize - cellMinSize);
 
-      // Random position (ensuring it fits within bounds)
-      final x = padding + _random.nextDouble() * (1.0 - padding * 2 - width);
-      final y = padding + _random.nextDouble() * (1.0 - padding * 2 - height);
+      final availableWidth = max(0.0, 1.0 - padding * 2 - width);
+      final availableHeight = max(0.0, 1.0 - padding * 2 - height);
+      final x = padding + _random.nextDouble() * availableWidth;
+      final y = padding + _random.nextDouble() * availableHeight;
 
-      // Random rotation (-15 to 15 degrees)
       final rotation = -15 + _random.nextDouble() * 30;
 
       cells.add(LayoutCell(

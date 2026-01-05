@@ -20,6 +20,8 @@ class LayoutCell extends Equatable {
   final String? imageId;
   final double rotation; // In degrees
   final double scale;
+  final double imageOffsetX; // For free crop: normalized offset within cell (-0.5 to 0.5)
+  final double imageOffsetY; // For free crop: normalized offset within cell (-0.5 to 0.5)
 
   const LayoutCell({
     required this.id,
@@ -30,6 +32,8 @@ class LayoutCell extends Equatable {
     this.imageId,
     this.rotation = 0.0,
     this.scale = 1.0,
+    this.imageOffsetX = 0.0,
+    this.imageOffsetY = 0.0,
   });
 
   LayoutCell copyWith({
@@ -41,6 +45,8 @@ class LayoutCell extends Equatable {
     String? imageId,
     double? rotation,
     double? scale,
+    double? imageOffsetX,
+    double? imageOffsetY,
   }) {
     return LayoutCell(
       id: id ?? this.id,
@@ -51,6 +57,8 @@ class LayoutCell extends Equatable {
       imageId: imageId ?? this.imageId,
       rotation: rotation ?? this.rotation,
       scale: scale ?? this.scale,
+      imageOffsetX: imageOffsetX ?? this.imageOffsetX,
+      imageOffsetY: imageOffsetY ?? this.imageOffsetY,
     );
   }
 
@@ -64,6 +72,8 @@ class LayoutCell extends Equatable {
       'imageId': imageId,
       'rotation': rotation,
       'scale': scale,
+      'imageOffsetX': imageOffsetX,
+      'imageOffsetY': imageOffsetY,
     };
   }
 
@@ -77,11 +87,13 @@ class LayoutCell extends Equatable {
       imageId: json['imageId'] as String?,
       rotation: (json['rotation'] as num?)?.toDouble() ?? 0.0,
       scale: (json['scale'] as num?)?.toDouble() ?? 1.0,
+      imageOffsetX: (json['imageOffsetX'] as num?)?.toDouble() ?? 0.0,
+      imageOffsetY: (json['imageOffsetY'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
   @override
-  List<Object?> get props => [id, x, y, width, height, imageId, rotation, scale];
+  List<Object?> get props => [id, x, y, width, height, imageId, rotation, scale, imageOffsetX, imageOffsetY];
 }
 
 /// Represents a complete collage layout
