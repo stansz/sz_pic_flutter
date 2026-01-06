@@ -38,11 +38,11 @@ SZ Picture Create is a cross-platform mobile application that combines powerful 
   - Template: Pre-designed 2-5 image layouts
   - Freestyle: Interactive editor with drag, resize, and rotate
 - ✅ **Image Selection**: Multiple images from gallery or camera
--  **AI Suggestions**: Get layout recommendations based on image count
 - ✅ **Export Options**: PNG and JPEG (high quality)
 - ✅ **Freestyle Editor**: Full interactive editing with drag, resize, rotate, and layer management
 - 🚧 **Customization**: Background colors, spacing, aspect ratios (for other layouts)
-
+- 🚧  **AI Suggestions**: Get layout recommendations based on image count
+  
 ### AI Integration
 - ✅ **Dual Provider Support**
   - Ollama: Local, privacy-first AI processing
@@ -117,7 +117,7 @@ lib/
 - 🚧 Project management
 - 🚧 Web deployment
 
-### Future Versopms
+### Future Versions
 - ⏳ Video export
 - ⏳ Cloud storage
 - ⏳ Social sharing
