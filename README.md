@@ -94,13 +94,6 @@ lib/
 └── main.dart             # App entry point
 ```
 
-### Key Technologies
-- **State Management**: Provider
-- **UI Framework**: Flutter Material Design 3
-- **Image Processing**: `image` package
-- **Networking**: Dio for AI API calls
-- **Storage**: SQLite + SharedPreferences
-- **AI**: Ollama (local) + OpenRouter (cloud)
 
 ## 📚 Documentation
 
@@ -110,28 +103,27 @@ lib/
 
 ## 🗺️ Roadmap
 
-### Version 1.0 (Current - Alpha)
+### Current - Alpha
 - ✅ Core collage creation
-- ✅ Basic AI integration
 - ✅ Image picker
 - ✅ PNG export
+- ✅ JPG export
 
 ### Version 1.1 (Next)
 - ✅ Freestyle editor with interactive controls
+- 🚧 Slideshow creator
+- 🚧 Video export
 - 🚧 Settings screen
 - 🚧 Project management
-- 🚧 PDF export
+- 🚧 Web deployment
 
-### Version 2.0 (Future)
-- ⏳ Slideshow creator
+### Future Versopms
 - ⏳ Video export
 - ⏳ Cloud storage
 - ⏳ Social sharing
-
-### Version 3.0 (Future)
 - ⏳ iOS support
 - ⏳ Web deployment
-- ⏳ Advanced AI features
+- ⏳ AI features
 - ⏳ Collaboration tools
 
 See [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for detailed progress.
