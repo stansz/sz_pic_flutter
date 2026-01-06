@@ -26,6 +26,22 @@
    - Both controls now properly update the layout state and rebuild the UI
    - Aspect ratio change is immediately visible via the AspectRatio widget
 
+### Current Session (Jan 6, 2026)
+1. **Slideshow Editor Layout Fix Fixed**: Fixed off-screen controls issue in slideshow editor
+   - Wrapped body in [`SafeArea`](lib/screens/slideshow/slideshow_editor_screen.dart:67) with `bottom: true` to ensure controls are visible above bottom edge
+   - Added [`LayoutBuilder`](lib/screens/slideshow/slideshow_editor_screen.dart:112) + [`ClipRect`](lib/screens/slideshow/slideshow_editor_screen.dart:114) to prevent image overflow
+   - Used [`FittedBox`](lib/screens/slideshow/slideshow_editor_screen.dart:152) with `BoxFit.contain` for proper image sizing
+   - Controls (play, rewind, fast forward, shuffle) now properly visible after selecting images
+2. **Slideshow Settings Bottom Sheet Fix**: Fixed slider and dropdown not responding properly
+   - Removed `Navigator.of(context).pop()` from DropdownButton's onChanged callback
+   - Bottom sheet now stays open while adjusting settings
+   - User can adjust slide duration slider and transition type without UI closing
+   - Only closes when tapping "Done" button or tapping outside
+3. **Slideshow Settings Accessibility Improvements**: Ensured the settings dialog stays fully visible on devices with navigation bars
+   - Enabled `isScrollControlled` and wrapped the content in a `SingleChildScrollView` so the dialog can grow while remaining scrollable
+   - Added a top-right check icon for the Done action and respected the combined viewInsets/viewPadding on the bottom edge
+   - Applied extra bottom padding so the sheet stays above Android navigation bars and leaves the slider/controls reachable
+
 ### Previous Session (Jan 4, 2026)
 1. **Freestyle Editor Enhancement**: Created a new interactive editor for freestyle layouts with full customization capabilities
    - Created [`FreestyleEditorScreen`](lib/screens/collage/freestyle_editor_screen.dart:1) with drag, resize, and rotate functionality
