@@ -18,6 +18,13 @@
    - Automatic text contrast calculation for readability
    - Selected color immediately updates collage background
    - Background color is preserved when exporting collage
+2. **Aspect and Spacing Controls Fixed**: Implemented functional aspect ratio and spacing adjustment controls
+   - **Aspect Ratio**: Bottom sheet with 6 common ratios (1:1, 4:3, 3:2, 16:9, 3:4, 9:16)
+   - **Spacing**: Slider dialog to adjust spacing from 0% to 50%
+   - Slider labels changed to "Closer" and "Further" for better UX
+   - Uses CollageEngine to regenerate layouts with new spacing
+   - Both controls now properly update the layout state and rebuild the UI
+   - Aspect ratio change is immediately visible via the AspectRatio widget
 
 ### Previous Session (Jan 4, 2026)
 1. **Freestyle Editor Enhancement**: Created a new interactive editor for freestyle layouts with full customization capabilities
@@ -87,6 +94,8 @@
 - ✅ PNG and JPEG export with user-selected save location
 - ✅ Free crop mode for precise image positioning within cells
 - ✅ Background color picker with preset and custom colors
+- ✅ Aspect ratio selector with 6 common ratios
+- ✅ Spacing adjustment slider (0-50%) with "Closer" / "Further" labels
 
 ## Known Limitations
 
@@ -102,13 +111,12 @@
 
 ### Immediate (This Week)
 - Implement Settings screen with AI provider configuration
-- Implement aspect ratio selector
+- Implement drag-drop for cells in regular editor (freestyle editor already has this)
 
 ### Short Term (This Month)
 - Build SQLite database for project storage
 - Create project gallery screen
 - Implement PDF export flow to follow up on the placeholder
-- Implement drag-drop for cells in regular editor (freestyle editor already has this)
 
 ### Medium Term (Next Month)
 - Start slideshow creator implementation

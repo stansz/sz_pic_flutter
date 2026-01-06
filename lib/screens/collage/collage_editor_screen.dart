@@ -9,6 +9,7 @@ import 'package:path/path.dart' as p;
 import 'package:image/image.dart' as img;
 import '../../core/models/image_item.dart';
 import '../../core/models/collage_models.dart';
+import '../../core/services/collage_engine.dart';
 import '../../core/utils/export_helper.dart';
 import '../../core/widgets/color_picker_dialog.dart';
 
@@ -38,6 +39,7 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
   late CollageLayout _currentLayout;
   final GlobalKey _collageKey = GlobalKey();
   bool _isExporting = false;
+  final CollageEngine _engine = CollageEngine();
 
   @override
   void initState() {
@@ -160,6 +162,162 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
         _currentLayout = _currentLayout.copyWith(backgroundColor: newColor);
       });
     }
+  }
+
+  void _showAspectRatioPicker() {
+    final aspectRatios = [
+      {'label': '1:1 (Square)', 'value': 1.0},
+      {'label': '4:3 (Standard)', 'value': 4.0 / 3.0},
+      {'label': '3:2 (Classic)', 'value': 3.0 / 2.0},
+      {'label': '16:9 (Widescreen)', 'value': 16.0 / 9.0},
+      {'label': '3:4 (Portrait)', 'value': 3.0 / 4.0},
+      {'label': '9:16 (Tall)', 'value': 9.0 / 16.0},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Choose Aspect Ratio',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            ...aspectRatios.map((ratio) => ListTile(
+              leading: Icon(
+                _currentLayout.aspectRatio == ratio['value']
+                    ? Icons.check_circle
+                    : Icons.circle_outlined,
+              ),
+              title: Text(ratio['label'] as String),
+              onTap: () {
+                Navigator.pop(context);
+                setState(() {
+                  _currentLayout = _currentLayout.copyWith(
+                    aspectRatio: ratio['value'] as double,
+                  );
+                });
+              },
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSpacingPicker() {
+    double currentSpacing = _currentLayout.spacing;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Adjust Spacing'),
+        content: StatefulBuilder(
+          builder: (context, setState) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Spacing: ${(currentSpacing * 100).toStringAsFixed(0)}%',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 16),
+              Slider(
+                value: currentSpacing,
+                min: 0.0,
+                max: 0.5,
+                divisions: 50,
+                onChanged: (value) {
+                  setState(() {
+                    currentSpacing = value;
+                  });
+                },
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Text('Closer'),
+                  Text('Further'),
+                ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _regenerateLayoutWithSpacing(currentSpacing);
+            },
+            child: const Text('Apply'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _regenerateLayoutWithSpacing(double newSpacing) {
+    // Get the image IDs currently assigned to cells
+    final imageIds = _currentLayout.cells
+        .map((c) => c.imageId)
+        .where((id) => id != null)
+        .toList();
+
+    // Regenerate the layout with the new spacing
+    CollageLayout newLayout;
+    
+    switch (_currentLayout.type) {
+      case LayoutType.grid:
+        newLayout = _engine.createGridLayout(
+          imageCount: _currentLayout.cells.length,
+          aspectRatio: _currentLayout.aspectRatio,
+          spacing: newSpacing,
+          padding: _currentLayout.padding,
+        );
+        break;
+      case LayoutType.masonry:
+        newLayout = _engine.createMasonryLayout(
+          imageCount: _currentLayout.cells.length,
+          aspectRatio: _currentLayout.aspectRatio,
+          spacing: newSpacing,
+          padding: _currentLayout.padding,
+        );
+        break;
+      case LayoutType.template:
+        newLayout = _engine.createTemplateLayout(
+          imageCount: _currentLayout.cells.length,
+          aspectRatio: _currentLayout.aspectRatio,
+          spacing: newSpacing,
+          padding: _currentLayout.padding,
+        );
+        break;
+      case LayoutType.freestyle:
+      case LayoutType.smart:
+        // For freestyle/smart, just update spacing value (not used in cell positioning)
+        newLayout = _currentLayout.copyWith(spacing: newSpacing);
+        break;
+    }
+
+    // Assign the same images to the new layout cells
+    newLayout = _engine.assignImagesToLayout(newLayout, imageIds.cast<String>());
+
+    setState(() {
+      _currentLayout = newLayout;
+    });
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Spacing updated to ${(newSpacing * 100).toStringAsFixed(0)}%'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   void _showExportOptions() {
@@ -309,20 +467,12 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
                       _ControlButton(
                         icon: Icons.aspect_ratio,
                         label: 'Aspect',
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Aspect ratio adjustment coming soon')),
-                          );
-                        },
+                        onPressed: _showAspectRatioPicker,
                       ),
                       _ControlButton(
                         icon: Icons.space_bar,
                         label: 'Spacing',
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Spacing adjustment coming soon')),
-                          );
-                        },
+                        onPressed: _showSpacingPicker,
                       ),
                       _ControlButton(
                         icon: Icons.shuffle,
