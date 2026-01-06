@@ -1,4 +1,4 @@
-# SZ Pic - AI-Powered Collage & Slideshow Creator
+# SZ Picture Create - AI-Powered Collage & Slideshow Creator
 
 <div align="center">
 
