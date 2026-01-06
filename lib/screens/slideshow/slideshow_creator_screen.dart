@@ -30,6 +30,7 @@ class _SlideshowCreatorScreenState extends State<SlideshowCreatorScreen> {
     TransitionType.slide,
     TransitionType.zoom,
     TransitionType.dissolve,
+    TransitionType.kenBurns,
   ];
 
   @override
@@ -46,6 +47,12 @@ class _SlideshowCreatorScreenState extends State<SlideshowCreatorScreen> {
       appBar: AppBar(
         title: const Text('Create Slideshow'),
         actions: [
+          if (_images.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.add_photo_alternate_rounded),
+              tooltip: 'Add Photos',
+              onPressed: _addMoreImages,
+            ),
           if (_images.isNotEmpty)
             TextButton(
               onPressed: _createSlideshow,
@@ -66,13 +73,6 @@ class _SlideshowCreatorScreenState extends State<SlideshowCreatorScreen> {
           if (_images.isNotEmpty) _buildControls(context),
         ],
       ),
-      floatingActionButton: _images.isEmpty
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: _addMoreImages,
-              icon: const Icon(Icons.add_photo_alternate_rounded),
-              label: const Text('Add Photos'),
-            ),
     );
   }
 
@@ -250,35 +250,7 @@ class _SlideshowCreatorScreenState extends State<SlideshowCreatorScreen> {
           const SizedBox(height: 16),
 
           // Transition Type
-          Row(
-            children: [
-              const Icon(Icons.animation_rounded),
-              const SizedBox(width: 12),
-              const Text('Transition Effect'),
-              const Spacer(),
-              DropdownButton<TransitionType>(
-                value: _transitionType,
-                underline: const SizedBox(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _transitionType = value;
-                    });
-                  }
-                },
-                items: _transitionOptions.map((type) {
-                  final name = type.name;
-                  final displayName = name.isEmpty
-                      ? name
-                      : name[0].toUpperCase() + name.substring(1);
-                  return DropdownMenuItem(
-                    value: type,
-                    child: Text(displayName),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
+          _buildTransitionControl(context),
 
           const SizedBox(height: 16),
 
@@ -302,6 +274,126 @@ class _SlideshowCreatorScreenState extends State<SlideshowCreatorScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildTransitionControl(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        const Icon(Icons.animation_rounded),
+        const SizedBox(width: 12),
+        const Text('Transition Effect'),
+        const Spacer(),
+        GestureDetector(
+          onTap: () => _showTransitionSelector(context),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _transitionDisplayName(_transitionType),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.expand_more,
+                  size: 20,
+                  color: theme.colorScheme.primary,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showTransitionSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Select Transition',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.of(sheetContext).pop(),
+                        splashRadius: 20,
+                      ),
+                    ],
+                  ),
+                ),
+                ..._transitionOptions.map((type) {
+                  final isSelected = _transitionType == type;
+                  return ListTile(
+                    title: Text(_transitionDisplayName(type)),
+                    trailing: isSelected
+                        ? Icon(
+                            Icons.check_rounded,
+                            color: theme.colorScheme.primary,
+                          )
+                        : null,
+                    selected: isSelected,
+                    selectedTileColor:
+                        theme.colorScheme.primary.withValues(alpha: 0.08),
+                    onTap: () {
+                      setState(() {
+                        _transitionType = type;
+                      });
+                      Navigator.of(sheetContext).pop();
+                    },
+                  );
+                }),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _transitionDisplayName(TransitionType type) {
+    final buffer = StringBuffer();
+    final raw = type.name;
+    for (var i = 0; i < raw.length; i++) {
+      final char = raw[i];
+      final isUpperCase = char != char.toLowerCase();
+      if (i > 0 && isUpperCase) {
+        buffer.write(' ');
+      }
+      buffer.write(char);
+    }
+
+    return buffer.toString().split(' ').map((word) {
+      if (word.isEmpty) return word;
+      final normalized = word.toLowerCase();
+      return normalized[0].toUpperCase() + normalized.substring(1);
+    }).join(' ');
   }
 
   Future<void> _pickImages() async {
