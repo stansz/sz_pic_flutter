@@ -17,12 +17,16 @@ class SlideshowEditorScreen extends StatefulWidget {
   State<SlideshowEditorScreen> createState() => _SlideshowEditorScreenState();
 }
 
-class _SlideshowEditorScreenState extends State<SlideshowEditorScreen> {
+class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
+    with SingleTickerProviderStateMixin {
   late SlideshowProject _project;
   int _currentSlideIndex = 0;
   bool _isPlaying = false;
   Timer? _playbackTimer;
   Duration _remainingTime = Duration.zero;
+  late TransitionType _activeTransitionType;
+  int? _previousSlideIndex;
+  late AnimationController _transitionController;
 
   @override
   void initState() {
@@ -31,11 +35,27 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen> {
     _remainingTime = _project.slides.isNotEmpty
         ? _project.slides[0].duration
         : Duration.zero;
+    _activeTransitionType = _sanitizeTransitionType(
+      _project.slides.isNotEmpty ? _project.slides[0].transitionIn?.type : null,
+    );
+    _transitionController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    )
+      ..value = 1.0
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed && _previousSlideIndex != null) {
+          setState(() {
+            _previousSlideIndex = null;
+          });
+        }
+      });
   }
 
   @override
   void dispose() {
     _stopPlayback();
+    _transitionController.dispose();
     super.dispose();
   }
 
@@ -108,57 +128,13 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen> {
       );
     }
 
-    final currentSlide = _project.slides[_currentSlideIndex];
-
     return LayoutBuilder(
       builder: (context, constraints) {
         return ClipRect(
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Current Image
-              Center(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 500),
-                  transitionBuilder: (child, animation) {
-                    final transitionType = currentSlide.transitionIn?.type;
-                    switch (transitionType) {
-                      case TransitionType.slide:
-                        return SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(1.0, 0.0),
-                            end: Offset.zero,
-                          ).animate(animation),
-                          child: child,
-                        );
-                      case TransitionType.zoom:
-                        return ScaleTransition(
-                          scale: Tween<double>(begin: 0.8, end: 1.0).animate(animation),
-                          child: child,
-                        );
-                      case TransitionType.dissolve:
-                        return FadeTransition(
-                          opacity: animation,
-                          child: child,
-                        );
-                      case TransitionType.fade:
-                      case TransitionType.kenBurns:
-                      default:
-                        return FadeTransition(
-                          opacity: animation,
-                          child: child,
-                        );
-                    }
-                  },
-                  child: FittedBox(
-                    fit: BoxFit.contain,
-                    child: Image.file(
-                      File(currentSlide.image.path),
-                      key: ValueKey(currentSlide.id),
-                    ),
-                  ),
-                ),
-              ),
+              _buildTransitionStack(),
 
               // Slide Counter and Timer Overlay
               Positioned(
@@ -194,6 +170,93 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildTransitionStack() {
+    final currentSlide = _project.slides[_currentSlideIndex];
+    return AnimatedBuilder(
+      animation: _transitionController,
+      builder: (context, child) {
+        final progress = _transitionController.value.clamp(0.0, 1.0);
+        final slides = <Widget>[];
+        if (_previousSlideIndex != null &&
+            _previousSlideIndex! >= 0 &&
+            _previousSlideIndex! < _project.slides.length) {
+          slides.add(_buildTransitionedSlide(
+            _project.slides[_previousSlideIndex!],
+            progress,
+            incoming: false,
+          ));
+        }
+        slides.add(_buildTransitionedSlide(currentSlide, progress, incoming: true));
+        return Stack(
+          fit: StackFit.expand,
+          children: slides,
+        );
+      },
+    );
+  }
+
+  Widget _buildTransitionedSlide(Slide slide, double progress, {required bool incoming}) {
+    final clampedProgress = progress.clamp(0.0, 1.0);
+    final effectProgress = incoming ? clampedProgress : 1.0 - clampedProgress;
+    final transitionType = slide.transitionIn?.type ?? _activeTransitionType;
+    Widget child = _buildSlideImage(slide);
+    switch (transitionType) {
+      case TransitionType.slide:
+        final translation = incoming
+            ? Offset(1.0 - clampedProgress, 0)
+            : Offset(-clampedProgress, 0);
+        child = FractionalTranslation(
+          translation: translation,
+          child: child,
+        );
+        break;
+      case TransitionType.zoom:
+        final scaleValue = incoming
+            ? 0.8 + 0.2 * effectProgress
+            : 1.0 + 0.15 * clampedProgress;
+        child = Transform.scale(
+          scale: scaleValue,
+          alignment: Alignment.center,
+          child: child,
+        );
+        break;
+      case TransitionType.kenBurns:
+        final scaleValue = 1.0 + (incoming ? 0.05 * effectProgress : 0.05 * clampedProgress);
+        final translation = incoming
+            ? Offset(0.05 * (1 - effectProgress), 0.05 * (1 - effectProgress))
+            : Offset(-0.05 * clampedProgress, -0.05 * clampedProgress);
+        child = FractionalTranslation(
+          translation: translation,
+          child: Transform.scale(
+            scale: scaleValue,
+            alignment: Alignment.center,
+            child: child,
+          ),
+        );
+        break;
+      case TransitionType.dissolve:
+      case TransitionType.fade:
+      default:
+        // No additional transform, fallback to opacity only
+        break;
+    }
+    final opacity = incoming ? clampedProgress : 1.0 - clampedProgress;
+    return Opacity(
+      opacity: opacity.clamp(0.0, 1.0),
+      child: child,
+    );
+  }
+
+  Widget _buildSlideImage(Slide slide) {
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: Image.file(
+        File(slide.image.path),
+        key: ValueKey(slide.id),
+      ),
     );
   }
 
@@ -271,6 +334,37 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen> {
     );
   }
 
+  void _goToSlide(int index, {bool animate = true}) {
+    if (_project.slides.isEmpty) return;
+    if (index < 0 || index >= _project.slides.length) return;
+    if (index == _currentSlideIndex) return;
+    final previousIndex = _currentSlideIndex;
+    setState(() {
+      _previousSlideIndex = animate ? previousIndex : null;
+      _currentSlideIndex = index;
+      _remainingTime = _project.slides[index].duration;
+    });
+    if (animate) {
+      _runTransitionAnimation(_project.slides[index]);
+    } else {
+      _transitionController.value = 1.0;
+    }
+  }
+
+  void _runTransitionAnimation(Slide slide) {
+    final duration = slide.transitionIn?.duration ?? const Duration(milliseconds: 500);
+    _transitionController
+      ..duration = duration
+      ..forward(from: 0.0);
+  }
+
+  TransitionType _sanitizeTransitionType(TransitionType? type) {
+    if (type == TransitionType.dissolve) {
+      return TransitionType.fade;
+    }
+    return type ?? TransitionType.fade;
+  }
+
   void _togglePlayback() {
     if (_isPlaying) {
       _stopPlayback();
@@ -294,22 +388,18 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen> {
           return;
         }
 
-        setState(() {
-          if (_remainingTime.inMilliseconds > 100) {
+        if (_remainingTime.inMilliseconds > 100) {
+          setState(() {
             _remainingTime = _remainingTime - const Duration(milliseconds: 100);
+          });
+        } else {
+          if (_currentSlideIndex < _project.slides.length - 1) {
+            _goToSlide(_currentSlideIndex + 1);
           } else {
-            // Move to next slide
-            if (_currentSlideIndex < _project.slides.length - 1) {
-              _currentSlideIndex++;
-              _remainingTime = _project.slides[_currentSlideIndex].duration;
-            } else {
-              // End of slideshow
-              _stopPlayback();
-              _currentSlideIndex = 0;
-              _remainingTime = _project.slides[0].duration;
-            }
+            _stopPlayback();
+            _goToSlide(0, animate: false);
           }
-        });
+        }
       },
     );
   }
@@ -324,22 +414,12 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen> {
 
   void _previousSlide() {
     _stopPlayback();
-    setState(() {
-      if (_currentSlideIndex > 0) {
-        _currentSlideIndex--;
-        _remainingTime = _project.slides[_currentSlideIndex].duration;
-      }
-    });
+    _goToSlide(_currentSlideIndex - 1);
   }
 
   void _nextSlide() {
     _stopPlayback();
-    setState(() {
-      if (_currentSlideIndex < _project.slides.length - 1) {
-        _currentSlideIndex++;
-        _remainingTime = _project.slides[_currentSlideIndex].duration;
-      }
-    });
+    _goToSlide(_currentSlideIndex + 1);
   }
 
   void _shuffleSlides() {
@@ -360,10 +440,15 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen> {
 
     setState(() {
       _project = newProject;
+      _activeTransitionType = _project.slides.isNotEmpty
+          ? _sanitizeTransitionType(_project.slides[0].transitionIn?.type)
+          : _activeTransitionType;
       _currentSlideIndex = 0;
       _remainingTime = _project.slides.isNotEmpty
           ? _project.slides[0].duration
           : Duration.zero;
+      _previousSlideIndex = null;
+      _transitionController.value = 1.0;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -493,9 +578,7 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen> {
                         const Text('Transition'),
                         const Spacer(),
                         DropdownButton<TransitionType>(
-                          value: _project.slides.isNotEmpty
-                              ? _project.slides[0].transitionIn?.type
-                              : TransitionType.fade,
+                          value: _activeTransitionType,
                           underline: const SizedBox(),
                           onChanged: (value) {
                             if (value != null) {
@@ -507,12 +590,15 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen> {
                               );
                               setState(() {
                                 _project = newProject;
+                                _activeTransitionType = value;
                               });
                               // Also update the modal state to rebuild the bottom sheet
                               setModalState(() {});
                             }
                           },
-                          items: TransitionType.values.map((type) {
+                          items: TransitionType.values
+                              .where((type) => type != TransitionType.dissolve)
+                              .map((type) {
                             final name = type.name;
                             final displayName = name.isEmpty
                                 ? name

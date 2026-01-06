@@ -38,9 +38,11 @@
    - User can adjust slide duration slider and transition type without UI closing
    - Only closes when tapping "Done" button or tapping outside
 3. **Slideshow Settings Accessibility Improvements**: Ensured the settings dialog stays fully visible on devices with navigation bars
-   - Enabled `isScrollControlled` and wrapped the content in a `SingleChildScrollView` so the dialog can grow while remaining scrollable
-   - Added a top-right check icon for the Done action and respected the combined viewInsets/viewPadding on the bottom edge
-   - Applied extra bottom padding so the sheet stays above Android navigation bars and leaves the slider/controls reachable
+    - Enabled `isScrollControlled` and wrapped the content in a `SingleChildScrollView` so the dialog can grow while remaining scrollable
+    - Added a top-right check icon for the Done action and respected the combined viewInsets/viewPadding on the bottom edge
+    - Applied extra bottom padding so the sheet stays above Android navigation bars and leaves the slider/controls reachable
+4. **Slideshow Transition Engine Overhaul**: Rebuilt the preview to animate transitions via a dedicated `AnimationController` stack so every [`TransitionType`](lib/core/models/slideshow_models.dart:5-26) drives the incoming/outgoing transforms, and updated `_goToSlide` to share the same controller across timer/manual navigation while leaking fewer animation states (`lib/screens/slideshow/slideshow_editor_screen.dart:108-446`)
+   - Removed `TransitionType.dissolve` from both the creator list and editor dropdown so users only choose slide/zoom/fade/kenBurns while still sanitizing any stored dissolve projects (`lib/screens/slideshow/slideshow_creator_screen.dart:28-36`, `lib/screens/slideshow/slideshow_editor_screen.dart:498-604`)
 
 ### Previous Session (Jan 4, 2026)
 1. **Freestyle Editor Enhancement**: Created a new interactive editor for freestyle layouts with full customization capabilities

@@ -29,7 +29,6 @@ class _SlideshowCreatorScreenState extends State<SlideshowCreatorScreen> {
     TransitionType.fade,
     TransitionType.slide,
     TransitionType.zoom,
-    TransitionType.dissolve,
     TransitionType.kenBurns,
   ];
 
