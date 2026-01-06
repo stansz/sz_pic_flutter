@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../core/services/image_picker_service.dart';
 import '../core/widgets/loading_dialog.dart';
 import 'collage/collage_creator_screen.dart';
+import 'slideshow/slideshow_creator_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -84,7 +85,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: 'Create Slideshow',
                         subtitle: 'Make animated photo presentations',
                         color: theme.colorScheme.secondary,
-                        onTap: () => _showComingSoon(context, 'Slideshow Creator'),
+                        onTap: _isLoading ? null : () => _navigateToSlideshowCreator(context),
+                        isLoading: _isLoading,
                       ),
                       const SizedBox(height: 16),
                       _MenuCard(
@@ -171,6 +173,80 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => CollageCreatorScreen(images: images),
+          ),
+        );
+      }
+    } catch (e) {
+      // Hide loading dialog on error
+      if (mounted) {
+        LoadingDialog.hide(context);
+      }
+      
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading images: ${e.toString()}'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _navigateToSlideshowCreator(BuildContext context) async {
+    if (!mounted) return;
+    
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Show loading dialog
+    LoadingDialog.show(
+      context,
+      message: 'Preparing your images...',
+      showProgress: false,
+    );
+
+    try {
+      final imagePickerService = context.read<ImagePickerService>();
+      
+      // Pick images first
+      final images = await imagePickerService.pickMultipleImages();
+      
+      // Hide loading dialog
+      if (mounted) {
+        LoadingDialog.hide(context);
+      }
+      
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      
+      if (images.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No images selected'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SlideshowCreatorScreen(initialImages: images),
           ),
         );
       }

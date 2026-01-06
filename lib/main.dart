@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'core/services/image_picker_service.dart';
 import 'core/services/collage_engine.dart';
+import 'core/services/slideshow_engine.dart';
 import 'core/services/ai_provider.dart';
 import 'core/services/ollama_provider.dart';
 import 'core/models/ai_models.dart';
@@ -28,6 +29,9 @@ class SZPicApp extends StatelessWidget {
           create: (_) => OllamaProvider(
             config: AIProviderConfig.defaultOllama(),
           ),
+        ),
+        Provider<SlideshowEngine>(
+          create: (_) => SlideshowEngine(),
         ),
       ],
       child: MaterialApp(
