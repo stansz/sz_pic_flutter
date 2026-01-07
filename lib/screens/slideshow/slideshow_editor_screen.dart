@@ -563,7 +563,7 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
-                          child: const Text(
+                          child: Text(
                             'Slideshow Settings',
                             style: TextStyle(
                               fontSize: 18,
