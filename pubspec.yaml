@@ -61,9 +61,9 @@ dependencies:
   cached_network_image: ^3.3.1
   shimmer: ^3.0.0
   
-  # Video/Export (for slideshows) - FFmpeg will be added when implementing slideshow export
+  # Video/Export (for slideshows)
   video_player: ^2.8.2
-  # ffmpeg_kit_flutter_min: ^6.0.3  # Uncomment when implementing video export
+  ffmpeg_kit_flutter_new: any
   
   # Utilities
   uuid: ^4.3.3

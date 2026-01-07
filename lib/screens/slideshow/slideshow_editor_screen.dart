@@ -1,9 +1,44 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as p;
+import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new/return_code.dart';
 import '../../core/models/image_item.dart';
 import '../../core/models/slideshow_models.dart';
 import '../../core/services/slideshow_engine.dart';
+import '../../core/utils/export_helper.dart';
+
+enum SlideshowExportFormat { pngSequence, video, projectFile }
+
+extension on SlideshowExportFormat {
+  String get displayName {
+    switch (this) {
+      case SlideshowExportFormat.pngSequence:
+        return 'PNG Sequence';
+      case SlideshowExportFormat.video:
+        return 'Video (MP4)';
+      case SlideshowExportFormat.projectFile:
+        return 'Project File';
+    }
+  }
+  
+  String get description {
+    switch (this) {
+      case SlideshowExportFormat.pngSequence:
+        return 'Individual slide images';
+      case SlideshowExportFormat.video:
+        return 'Compiled MP4 with transitions';
+      case SlideshowExportFormat.projectFile:
+        return 'Save project for later editing';
+    }
+  }
+}
 
 class SlideshowEditorScreen extends StatefulWidget {
   final SlideshowProject project;
@@ -27,6 +62,8 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
   late TransitionType _activeTransitionType;
   int? _previousSlideIndex;
   late AnimationController _transitionController;
+  final GlobalKey _slideshowKey = GlobalKey();
+  bool _isExporting = false;
 
   @override
   void initState() {
@@ -61,8 +98,6 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(_project.name),
@@ -78,9 +113,15 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
             tooltip: 'Settings',
           ),
           IconButton(
-            icon: const Icon(Icons.save_rounded),
-            onPressed: _saveProject,
-            tooltip: 'Save',
+            icon: _isExporting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.save_rounded),
+            onPressed: _isExporting ? null : _saveProject,
+            tooltip: 'Export',
           ),
         ],
       ),
@@ -130,43 +171,46 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return ClipRect(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              _buildTransitionStack(),
+        return RepaintBoundary(
+          key: _slideshowKey,
+          child: ClipRect(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                _buildTransitionStack(),
 
-              // Slide Counter and Timer Overlay
-              Positioned(
-                top: 16,
-                left: 16,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.timer_rounded,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '${_remainingTime.inSeconds}s',
-                        style: const TextStyle(
+                // Slide Counter and Timer Overlay
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.timer_rounded,
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          size: 16,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 6),
+                        Text(
+                          '${_remainingTime.inSeconds}s',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -237,9 +281,8 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
           ),
         );
         break;
-      case TransitionType.dissolve:
       case TransitionType.fade:
-      default:
+      case TransitionType.dissolve:
         // No additional transform, fallback to opacity only
         break;
     }
@@ -621,13 +664,369 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
     );
   }
 
-  void _saveProject() {
-    // TODO: Implement save to SQLite
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Project saved! (Demo)'),
-        duration: Duration(seconds: 2),
+  Future<Uint8List> _captureCurrentSlide() async {
+    final RenderRepaintBoundary boundary =
+        _slideshowKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
+  }
+
+  Future<void> _exportSlideshow(SlideshowExportFormat format) async {
+    setState(() {
+      _isExporting = true;
+    });
+
+    try {
+      switch (format) {
+        case SlideshowExportFormat.pngSequence:
+          await _exportPngSequence();
+          break;
+        case SlideshowExportFormat.video:
+          await _exportVideo();
+          break;
+        case SlideshowExportFormat.projectFile:
+          await _exportProjectFile();
+          break;
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Export failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isExporting = false;
+      });
+    }
+  }
+
+  Future<void> _exportPngSequence() async {
+    if (_project.slides.isEmpty) {
+      throw StateError('No slides to export');
+    }
+
+    // Prompt user for a save directory
+    final selectedDirectory = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: 'Select folder to save slideshow slides',
+      lockParentWindow: true,
+    );
+
+    if (selectedDirectory == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('PNG sequence export canceled'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Save each slide as a PNG image
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    int savedCount = 0;
+
+    for (int i = 0; i < _project.slides.length; i++) {
+      // Navigate to each slide without animation
+      _goToSlide(i, animate: false);
+      
+      // Wait for the slide to render
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      // Capture the current slide
+      final bytes = await _captureCurrentSlide();
+      
+      // Save the image
+      final fileName = 'slide_${i + 1}_of_${_project.slides.length}_$timestamp.png';
+      final filePath = p.join(selectedDirectory, fileName);
+      final file = File(filePath);
+      await file.writeAsBytes(bytes);
+      savedCount++;
+    }
+
+    // Return to the original slide
+    _goToSlide(_currentSlideIndex, animate: false);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$savedCount slides saved to: $selectedDirectory'),
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'OK',
+            onPressed: () {},
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _exportVideo() async {
+    if (_project.slides.isEmpty) {
+      throw StateError('No slides to export');
+    }
+
+    if (kIsWeb) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Video export is not supported on the web yet.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+
+    final selectedDirectory = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: 'Select folder to save slideshow frames + manifest',
+      lockParentWindow: true,
+    );
+
+    if (selectedDirectory == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Video export canceled'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+
+    _stopPlayback();
+    final originalIndex = _currentSlideIndex;
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final exportDir = Directory(
+      p.join(selectedDirectory, 'slideshow_frames_$timestamp'),
+    );
+    await exportDir.create(recursive: true);
+    final frameFiles = <File>[];
+
+    try {
+      for (var i = 0; i < _project.slides.length; i++) {
+        _goToSlide(i, animate: false);
+        await Future.delayed(const Duration(milliseconds: 120));
+        final bytes = await _captureCurrentSlide();
+        final frameFile = File(
+          p.join(exportDir.path, 'frame_${i.toString().padLeft(4, '0')}.png'),
+        );
+        await frameFile.writeAsBytes(bytes);
+        frameFiles.add(frameFile);
+      }
+
+      final listFile = File(p.join(exportDir.path, 'frames.txt'));
+      final buffer = StringBuffer();
+      for (var i = 0; i < frameFiles.length; i++) {
+        final slide = _project.slides[i];
+        buffer.writeln("file '${_escapePathForConcat(frameFiles[i].path)}'");
+        final durationSeconds = slide.duration.inMilliseconds / 1000.0;
+        buffer.writeln('duration ${durationSeconds.toStringAsFixed(3)}');
+      }
+      buffer.writeln("file '${_escapePathForConcat(frameFiles.last.path)}'");
+      await listFile.writeAsString(buffer.toString());
+
+      final outputPath = p.join(selectedDirectory, 'slideshow_$timestamp.mp4');
+      final ffmpegCommand = [
+        '-y',
+        '-f concat',
+        '-safe 0',
+        '-i "${listFile.path}"',
+        '-fps_mode vfr',
+        '-vf "scale=trunc(iw/2)*2:trunc(ih/2)*2"',
+        '-pix_fmt yuv420p',
+        '-c:v libx264',
+        '-preset veryfast',
+        '-crf 20',
+        '-movflags +faststart',
+        '"$outputPath"',
+      ].join(' ');
+
+      final session = await FFmpegKit.execute(ffmpegCommand);
+
+      final returnCode = await session.getReturnCode();
+      final sessionState = await session.getState();
+      final sessionDurationMs = await session.getDuration();
+      final ffmpegLogs = await session.getAllLogsAsString(5000);
+      debugPrint('FFmpeg exit=${returnCode?.getValue()} state=$sessionState duration=${sessionDurationMs}ms');
+
+      if (!ReturnCode.isSuccess(returnCode)) {
+        final failStack = await session.getFailStackTrace();
+        final stderrOutput = await session.getOutput();
+        debugPrint('FFmpeg command failed: $ffmpegCommand');
+        debugPrint('FFmpeg logs:\n${ffmpegLogs ?? stderrOutput ?? 'no logs'}');
+        throw Exception(
+          'FFmpeg failed (code ${returnCode?.getValue()}): ${failStack ?? stderrOutput ?? 'see logs'}',
+        );
+      } else {
+        debugPrint('FFmpeg command succeeded: $ffmpegCommand');
+        if (ffmpegLogs != null) {
+          debugPrint('FFmpeg logs:\n$ffmpegLogs');
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Video exported to: $outputPath'),
+            duration: const Duration(seconds: 6),
+            action: SnackBarAction(
+              label: 'OK',
+              onPressed: () {},
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted && _project.slides.isNotEmpty) {
+        _goToSlide(originalIndex, animate: false);
+      } else if (_project.slides.isNotEmpty) {
+        _currentSlideIndex = originalIndex.clamp(0, _project.slides.length - 1);
+        _remainingTime = _project.slides[_currentSlideIndex].duration;
+      }
+    }
+  }
+
+  Future<void> _exportProjectFile() async {
+    // For now, save as a JSON file with project data
+    final projectJson = {
+      'id': _project.id,
+      'name': _project.name,
+      'createdAt': _project.createdAt.toIso8601String(),
+      'updatedAt': _project.updatedAt.toIso8601String(),
+      'totalDuration': _project.totalDuration.inMilliseconds,
+      'musicPath': _project.musicPath,
+      'slides': _project.slides.map((slide) => {
+        'id': slide.id,
+        'order': slide.order,
+        'duration': slide.duration.inMilliseconds,
+        'imagePath': slide.image.path,
+        'transitionIn': {
+          'type': slide.transitionIn?.type.name,
+          'duration': slide.transitionIn?.duration.inMilliseconds,
+        },
+        'transitionOut': {
+          'type': slide.transitionOut?.type.name,
+          'duration': slide.transitionOut?.duration.inMilliseconds,
+        },
+      }).toList(),
+    };
+
+    final jsonString = JsonEncoder.withIndent('  ').convert(projectJson);
+    final bytes = Uint8List.fromList(jsonString.codeUnits);
+
+    if (kIsWeb) {
+      final filename = '${_project.name.replaceAll(' ', '_')}_project_${DateTime.now().millisecondsSinceEpoch}.json';
+      downloadImage(bytes, filename, 'application/json');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Project file download ready: $filename'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Prompt user for a save directory
+    final selectedDirectory = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: 'Select folder to save project file',
+      lockParentWindow: true,
+    );
+
+    if (selectedDirectory == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Project file export canceled'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+
+    final fileName = '${_project.name.replaceAll(' ', '_')}_project_${DateTime.now().millisecondsSinceEpoch}.json';
+    final filePath = p.join(selectedDirectory, fileName);
+    final file = File(filePath);
+    await file.writeAsBytes(bytes);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Project file saved to: $filePath'),
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'OK',
+            onPressed: () {},
+          ),
+        ),
+      );
+    }
+  }
+
+  String _escapePathForConcat(String path) {
+    final normalized = path.replaceAll('\\', '/');
+    return normalized.replaceAll("'", "\\'");
+  }
+
+  void _showExportOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Export Slideshow',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.image),
+              title: Text(SlideshowExportFormat.pngSequence.displayName),
+              subtitle: Text(SlideshowExportFormat.pngSequence.description),
+              onTap: () {
+                Navigator.pop(context);
+                _exportSlideshow(SlideshowExportFormat.pngSequence);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.videocam),
+              title: Text(SlideshowExportFormat.video.displayName),
+              subtitle: Text(SlideshowExportFormat.video.description),
+              onTap: () {
+                Navigator.pop(context);
+                _exportSlideshow(SlideshowExportFormat.video);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.save_alt),
+              title: Text(SlideshowExportFormat.projectFile.displayName),
+              subtitle: Text(SlideshowExportFormat.projectFile.description),
+              onTap: () {
+                Navigator.pop(context);
+                _exportSlideshow(SlideshowExportFormat.projectFile);
+              },
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  void _saveProject() {
+    // For now, show export options instead of just a placeholder
+    _showExportOptions();
   }
 }
