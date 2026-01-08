@@ -2,10 +2,19 @@
 
 ## Project Status
 **Version**: 1.0.0-alpha
-**Last Updated**: January 5, 2026
+**Last Updated**: January 7, 2026
 **Build Status**: ✅ Compiles and runs successfully on Android
 
 ## Recent Changes
+
+### Current Session (Jan 7, 2026)
+1. **Slideshow Video Export Implemented (FFmpeg Kit New)**: Switched to `ffmpeg_kit_flutter_new 4.1.0` for on-device video export
+  - Video export now runs synchronously via `FFmpegKit.execute` in [`_exportVideo()`](lib/screens/slideshow/slideshow_editor_screen.dart:793)
+  - Added concat-based encode pipeline (PNG frames + frames.txt) and detailed logging of return code/state/output
+  - Applied even-dimension scaling filter (`scale=trunc(iw/2)*2:trunc(ih/2)*2`) to satisfy libx264 requirements and avoid “height not divisible by 2” failures
+  - Export command uses `-fps_mode vfr`, `libx264`, `-crf 20`, `-preset veryfast`, and `faststart`
+  - **Fix**: Prevented blank/black frames by precaching slide images and waiting an extra frame before capture; per-frame logging now records image presence/size and manifest dump to debug concat ingestion
+2. **Build Confirmation**: Debug APK builds successfully with the new FFmpeg dependency
 
 ### Current Session (Jan 5, 2026)
 1. **Background Color Picker Implementation**: Added functional background color picker to both collage editors
@@ -118,12 +127,11 @@
 ## Known Limitations
 
 1. **AI Not Tested**: AI integration with Ollama and OpenRouter providers has been implemented but NOT tested yet
-2. **FFmpeg Removed**: Video export not currently available (needed for slideshows)
-3. **Fixed Canvas Size**: Editor uses 1000x1000 canvas which may not scale well for all aspect ratios
-4. **AI Parsing**: Regex-based JSON extraction from AI responses can fail with complex outputs
-5. **No Persistence**: Projects aren't saved between sessions
-6. **Limited Editing**: Can't drag/resize/rotate cells in regular editor (freestyle editor fully supports this)
-7. **Image Crop in Regular Editor**: Grid/Masonry/Template layouts don't have advanced crop features yet
+2. **Fixed Canvas Size**: Editor uses 1000x1000 canvas which may not scale well for all aspect ratios
+3. **AI Parsing**: Regex-based JSON extraction from AI responses can fail with complex outputs
+4. **No Persistence**: Projects aren't saved between sessions
+5. **Limited Editing**: Can't drag/resize/rotate cells in regular editor (freestyle editor fully supports this)
+6. **Image Crop in Regular Editor**: Grid/Masonry/Template layouts don't have advanced crop features yet
 
 ## Next Steps
 
@@ -138,7 +146,6 @@
 
 ### Medium Term (Next Month)
 - Start slideshow creator implementation
-- Add FFmpeg dependency for video export
 - Implement transition effects
 - Create timeline editor
 

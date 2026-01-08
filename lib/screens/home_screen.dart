@@ -113,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  'v0.01 • Made by SZ with ❤️',
+                  'v0.02 • Made by SZ',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurface.withOpacity(0.5),
                   ),

@@ -74,12 +74,14 @@ Located in `/Users/sz/StudioProjects/sz_pic_flutter/pubspec.yaml`
 - **shimmer ^3.0.0**: Loading animations
   - Planned: Skeleton screens
 
-### Video (Planned)
-- **video_player ^2.8.2**: Video playback
-  - For slideshow preview
-- **ffmpeg_kit_flutter_min**: Video processing (to be added)
-  - Slideshow export (MP4, MOV, GIF)
-  - Removed deprecated flutter_ffmpeg
+### Video
+- **video_player ^2.8.2**: Video playback for slideshow preview
+- **ffmpeg_kit_flutter_new 4.1.0**: Video processing for slideshow export
+ - Native dependency: `com.antonkarpenko:ffmpeg-kit-full-gpl:2.1.0`
+ - Uses concat manifest + `FFmpegKit.execute` in [`_exportVideo()`](lib/screens/slideshow/slideshow_editor_screen.dart:793)
+ - Command applies even-dimension scaling (`scale=trunc(iw/2)*2:trunc(ih/2)*2`), `-fps_mode vfr`, `libx264`, `-crf 20`, `-preset veryfast`, `+faststart`
+ - Replaces deprecated flutter_ffmpeg / ffmpeg_kit_flutter_min
+ - **Robust capture**: Precaches slide images and waits for an extra paint frame before capturing to avoid blank/black frames; per-frame logging records image presence/size and manifest contents
 
 ### Utilities
 - **uuid ^4.3.3**: Unique ID generation
