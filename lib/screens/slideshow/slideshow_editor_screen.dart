@@ -672,6 +672,29 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
     return byteData!.buffer.asUint8List();
   }
 
+  Future<void> _ensureSlideImageReady(Slide slide, int index) async {
+    final imageFile = File(slide.image.path);
+    final exists = await imageFile.exists();
+    final fileSize = exists ? await imageFile.length() : 0;
+    if (!exists) {
+      debugPrint('[exportVideo] slide $index image missing at ${slide.image.path}');
+      return;
+    }
+    debugPrint('[exportVideo] precache slide index=$index path=${slide.image.path} size=$fileSize');
+    try {
+      await precacheImage(FileImage(imageFile), context);
+    } catch (e) {
+      debugPrint('[exportVideo] precache failed for index=$index path=${slide.image.path}: $e');
+    }
+  }
+
+  Future<void> _waitForNextFrame() async {
+    // Allow the widget tree to rebuild and the image to paint
+    await Future.delayed(const Duration(milliseconds: 80));
+    await WidgetsBinding.instance.endOfFrame;
+    await Future.delayed(const Duration(milliseconds: 40));
+  }
+
   Future<void> _exportSlideshow(SlideshowExportFormat format) async {
     setState(() {
       _isExporting = true;
@@ -813,12 +836,19 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
     try {
       for (var i = 0; i < _project.slides.length; i++) {
         _goToSlide(i, animate: false);
-        await Future.delayed(const Duration(milliseconds: 120));
+        final slide = _project.slides[i];
+        await _ensureSlideImageReady(slide, i);
+        await _waitForNextFrame();
         final bytes = await _captureCurrentSlide();
         final frameFile = File(
           p.join(exportDir.path, 'frame_${i.toString().padLeft(4, '0')}.png'),
         );
         await frameFile.writeAsBytes(bytes);
+        final frameExists = await frameFile.exists();
+        final frameSize = frameExists ? await frameFile.length() : 0;
+        debugPrint(
+          '[exportVideo] captured frame index=$i slideId=${slide.id} durationMs=${slide.duration.inMilliseconds} bytes=${bytes.length} fileExists=$frameExists fileSize=$frameSize path=${frameFile.path}',
+        );
         frameFiles.add(frameFile);
       }
 
@@ -830,8 +860,9 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
         final durationSeconds = slide.duration.inMilliseconds / 1000.0;
         buffer.writeln('duration ${durationSeconds.toStringAsFixed(3)}');
       }
-      buffer.writeln("file '${_escapePathForConcat(frameFiles.last.path)}'");
-      await listFile.writeAsString(buffer.toString());
+      final listContents = buffer.toString();
+      await listFile.writeAsString(listContents);
+      debugPrint('[exportVideo] frames manifest path=${listFile.path}\n$listContents');
 
       final outputPath = p.join(selectedDirectory, 'slideshow_$timestamp.mp4');
       final ffmpegCommand = [
@@ -848,6 +879,7 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
         '-movflags +faststart',
         '"$outputPath"',
       ].join(' ');
+      debugPrint('[exportVideo] running ffmpeg: $ffmpegCommand');
 
       final session = await FFmpegKit.execute(ffmpegCommand);
 

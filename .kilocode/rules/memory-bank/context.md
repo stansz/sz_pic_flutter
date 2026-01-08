@@ -9,10 +9,11 @@
 
 ### Current Session (Jan 7, 2026)
 1. **Slideshow Video Export Implemented (FFmpeg Kit New)**: Switched to `ffmpeg_kit_flutter_new 4.1.0` for on-device video export
-  - Video export now runs synchronously via `FFmpegKit.execute` in [`_exportVideo()`](lib/screens/slideshow/slideshow_editor_screen.dart:836)
+  - Video export now runs synchronously via `FFmpegKit.execute` in [`_exportVideo()`](lib/screens/slideshow/slideshow_editor_screen.dart:793)
   - Added concat-based encode pipeline (PNG frames + frames.txt) and detailed logging of return code/state/output
   - Applied even-dimension scaling filter (`scale=trunc(iw/2)*2:trunc(ih/2)*2`) to satisfy libx264 requirements and avoid “height not divisible by 2” failures
   - Export command uses `-fps_mode vfr`, `libx264`, `-crf 20`, `-preset veryfast`, and `faststart`
+  - **Fix**: Prevented blank/black frames by precaching slide images and waiting an extra frame before capture; per-frame logging now records image presence/size and manifest dump to debug concat ingestion
 2. **Build Confirmation**: Debug APK builds successfully with the new FFmpeg dependency
 
 ### Current Session (Jan 5, 2026)
