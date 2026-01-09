@@ -19,12 +19,17 @@ lib/
 │       ├── ollama_provider.dart
 │       ├── openrouter_provider.dart
 │       ├── collage_engine.dart
+│       ├── slideshow_engine.dart
 │       └── image_picker_service.dart
 ├── screens/              # UI screens (stateful/stateless widgets)
 │   ├── home_screen.dart
-│   └── collage/
-│       ├── collage_creator_screen.dart
-│       └── collage_editor_screen.dart
+│   ├── collage/
+│   │   ├── collage_creator_screen.dart
+│   │   ├── collage_editor_screen.dart
+│   │   └── freestyle_editor_screen.dart
+│   └── slideshow/
+│       ├── slideshow_creator_screen.dart
+│       └── slideshow_editor_screen.dart
 └── main.dart             # App entry point (Provider setup)
 ```
 
@@ -164,6 +169,13 @@ abstract class AIProvider {
 - `assignImagesToLayout()`: Maps image IDs to cells
 - `updateCell()`: Immutably updates single cell
 
+### Slideshow Engine (`lib/core/services/slideshow_engine.dart`)
+
+- **createSlideshow()**: Creates a SlideshowProject from images with duration and transition settings
+- **formatDurationLong()**: Formats duration for display (e.g., "2 min 30 sec")
+- Manages slide ordering and transition configuration
+- Supports all TransitionType options (fade, slide, zoom, kenBurns)
+
 ### Image Picker Service (`lib/core/services/image_picker_service.dart`)
 
 - **Single Image**: `pickImage(ImageSource source)`
@@ -226,6 +238,29 @@ Provider.of<ImagePickerService>(context, listen: false)
 - Bottom controls: Aspect, Spacing, Shuffle, AI Enhance
 - Export uses `RenderRepaintBoundary.toImage(pixelRatio: 3.0)`
 - Saves to application documents directory
+
+### FreestyleEditorScreen (`lib/screens/collage/freestyle_editor_screen.dart`)
+- Receives CollageLayout and List<ImageItem>
+- Full drag, resize, and rotate functionality for images
+- Layer management (bring to front/send to back)
+- Free crop mode for precise image positioning
+- Full-screen crop dialog for adjustments
+- Export functionality (PNG/JPEG)
+
+### SlideshowCreatorScreen (`lib/screens/slideshow/slideshow_creator_screen.dart`)
+- First screen in slideshow creation flow
+- Image selection from gallery with add more photos support
+- Slide duration and transition type controls
+- Home button for returning to root screen
+- Navigates to SlideshowEditorScreen with created project
+
+### SlideshowEditorScreen (`lib/screens/slideshow/slideshow_editor_screen.dart`)
+- Receives SlideshowProject
+- Animation preview with transition effects
+- Play, rewind, fast forward, shuffle controls
+- Slide duration and transition type settings
+- Video export using FFmpeg Kit
+- Export saves to application documents directory
 
 ## Key Technical Patterns
 

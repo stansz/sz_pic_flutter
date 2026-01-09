@@ -35,6 +35,10 @@ Located in `/Users/sz/StudioProjects/sz_pic_flutter/pubspec.yaml`
   - Decode images, get dimensions
   - **JPEG Encoding**: Used in export feature to convert PNG to JPEG with quality control
   - `img.encodeJpg(decoded, quality: 92)` for collage exports
+- **slideshow_engine** (`lib/core/services/slideshow_engine.dart`): Slideshow project creation and management
+  - `createSlideshow()`: Creates SlideshowProject from images
+  - `formatDurationLong()`: Formats duration for display
+  - Manages slide ordering and transition configuration
 - **photo_view ^0.14.0**: Image viewer widget (planned usage)
 - **cached_network_image ^3.3.1**: Network image caching (planned)
 

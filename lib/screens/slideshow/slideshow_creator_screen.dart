@@ -46,6 +46,13 @@ class _SlideshowCreatorScreenState extends State<SlideshowCreatorScreen> {
       appBar: AppBar(
         title: const Text('Create Slideshow'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.home_outlined),
+            tooltip: 'Return to Home',
+            onPressed: () {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+          ),
           if (_images.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.add_photo_alternate_rounded),
