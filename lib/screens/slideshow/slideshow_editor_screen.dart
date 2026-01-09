@@ -123,6 +123,13 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
             onPressed: _isExporting ? null : _saveProject,
             tooltip: 'Export',
           ),
+          IconButton(
+            icon: const Icon(Icons.home_outlined),
+            tooltip: 'Return to Home',
+            onPressed: () {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+          ),
         ],
       ),
       body: SafeArea(

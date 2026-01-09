@@ -2,12 +2,16 @@
 
 ## Project Status
 **Version**: 1.0.0-alpha
-**Last Updated**: January 7, 2026
+**Last Updated**: January 9, 2026
 **Build Status**: ✅ Compiles and runs successfully on Android
 
 ## Recent Changes
 
-### Current Session (Jan 7, 2026)
+### Current Session (Jan 9, 2026)
+1. **Slideshow Creator AppBar Layout**: Moved home button to far left position in slideshow creator screen AppBar
+   - Order changed from: Add Photos → Next → Home
+   - New order: Home → Add Photos → Next
+   - Updated [`slideshow_creator_screen.dart`](lib/screens/slideshow/slideshow_creator_screen.dart:48-68)
 1. **Slideshow Video Export Implemented (FFmpeg Kit New)**: Switched to `ffmpeg_kit_flutter_new 4.1.0` for on-device video export
   - Video export now runs synchronously via `FFmpegKit.execute` in [`_exportVideo()`](lib/screens/slideshow/slideshow_editor_screen.dart:793)
   - Added concat-based encode pipeline (PNG frames + frames.txt) and detailed logging of return code/state/output
