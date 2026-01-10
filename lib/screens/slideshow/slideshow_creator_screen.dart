@@ -210,74 +210,70 @@ class _SlideshowCreatorScreenState extends State<SlideshowCreatorScreen> {
   Widget _buildControls(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Slide Duration
-          Row(
+    // Wrap in scrollable container for landscape mode
+    return SizedBox(
+      height: 180, // Constrain height for landscape compatibility
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.timer_rounded),
-              const SizedBox(width: 12),
-              const Text('Slide Duration'),
-              const Spacer(),
-              Text(
-                '${_slideDuration.inSeconds}s',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
+              // Slide Duration
+              Row(
+                children: [
+                  const Icon(Icons.timer_rounded),
+                  const SizedBox(width: 12),
+                  const Text('Slide Duration'),
+                  const Spacer(),
+                  Text(
+                    '${_slideDuration.inSeconds}s',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Slider(
+                value: _slideDuration.inSeconds.toDouble(),
+                min: 1,
+                max: 15,
+                divisions: 14,
+                onChanged: (value) {
+                  setState(() {
+                    _slideDuration = Duration(seconds: value.toInt());
+                  });
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              // Transition Type
+              _buildTransitionControl(context),
+
+              const SizedBox(height: 16),
+
+              // Info Row
+              Row(
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 16,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${_images.length} photos • ${SlideshowEngine.formatDurationLong(_slideDuration * _images.length)} total',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          Slider(
-            value: _slideDuration.inSeconds.toDouble(),
-            min: 1,
-            max: 15,
-            divisions: 14,
-            onChanged: (value) {
-              setState(() {
-                _slideDuration = Duration(seconds: value.toInt());
-              });
-            },
-          ),
-
-          const SizedBox(height: 16),
-
-          // Transition Type
-          _buildTransitionControl(context),
-
-          const SizedBox(height: 16),
-
-          // Info Row
-          Row(
-            children: [
-              Icon(
-                Icons.info_outline_rounded,
-                size: 16,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '${_images.length} photos • ${SlideshowEngine.formatDurationLong(_slideDuration * _images.length)} total',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }

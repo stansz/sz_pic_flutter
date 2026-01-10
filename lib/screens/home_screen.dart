@@ -66,45 +66,49 @@ class _HomeScreenState extends State<HomeScreen> {
               
               // Main Menu Cards
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _MenuCard(
-                        icon: Icons.grid_on_rounded,
-                        title: 'Create Collage',
-                        subtitle: 'Combine photos into beautiful layouts',
-                        color: theme.colorScheme.primary,
-                        onTap: _isLoading ? null : () => _navigateToCollageCreator(context),
-                        isLoading: _isLoading,
-                      ),
-                      const SizedBox(height: 16),
-                      _MenuCard(
-                        icon: Icons.slideshow_rounded,
-                        title: 'Create Slideshow',
-                        subtitle: 'Make animated photo presentations',
-                        color: theme.colorScheme.secondary,
-                        onTap: _isLoading ? null : () => _navigateToSlideshowCreator(context),
-                        isLoading: _isLoading,
-                      ),
-                      const SizedBox(height: 16),
-                      _MenuCard(
-                        icon: Icons.folder_rounded,
-                        title: 'My Projects',
-                        subtitle: 'View and edit saved projects',
-                        color: theme.colorScheme.tertiary,
-                        onTap: () => _showComingSoon(context, 'My Projects'),
-                      ),
-                      const SizedBox(height: 16),
-                      _MenuCard(
-                        icon: Icons.settings_rounded,
-                        title: 'Settings',
-                        subtitle: 'Configure AI and preferences',
-                        color: Colors.grey,
-                        onTap: () => _showComingSoon(context, 'Settings'),
-                      ),
-                    ],
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 16), // Add some top spacing for scroll
+                        _MenuCard(
+                          icon: Icons.grid_on_rounded,
+                          title: 'Create Collage',
+                          subtitle: 'Combine photos into beautiful layouts',
+                          color: theme.colorScheme.primary,
+                          onTap: _isLoading ? null : () => _navigateToCollageCreator(context),
+                          isLoading: _isLoading,
+                        ),
+                        const SizedBox(height: 16),
+                        _MenuCard(
+                          icon: Icons.slideshow_rounded,
+                          title: 'Create Slideshow',
+                          subtitle: 'Make animated photo presentations',
+                          color: theme.colorScheme.secondary,
+                          onTap: _isLoading ? null : () => _navigateToSlideshowCreator(context),
+                          isLoading: _isLoading,
+                        ),
+                        const SizedBox(height: 16),
+                        _MenuCard(
+                          icon: Icons.folder_rounded,
+                          title: 'My Projects',
+                          subtitle: 'View and edit saved projects',
+                          color: theme.colorScheme.tertiary,
+                          onTap: () => _showComingSoon(context, 'My Projects'),
+                        ),
+                        const SizedBox(height: 16),
+                        _MenuCard(
+                          icon: Icons.settings_rounded,
+                          title: 'Settings',
+                          subtitle: 'Configure AI and preferences',
+                          color: Colors.grey,
+                          onTap: () => _showComingSoon(context, 'Settings'),
+                        ),
+                        const SizedBox(height: 16), // Add some bottom spacing for scroll
+                      ],
+                    ),
                   ),
                 ),
               ),
