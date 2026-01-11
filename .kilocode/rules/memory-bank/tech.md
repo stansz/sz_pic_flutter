@@ -153,12 +153,19 @@ Located in `/Users/sz/StudioProjects/sz_pic_flutter/pubspec.yaml`
 - **Target SDK**: Latest stable
 - **Permissions** (AndroidManifest.xml):
   - READ_EXTERNAL_STORAGE (maxSdk 32)
-  - WRITE_EXTERNAL_STORAGE (maxSdk 32)
+  - WRITE_EXTERNAL_STORAGE (maxSdk 28)
+  - READ_MEDIA_IMAGES (API 33+)
+  - READ_MEDIA_VIDEO (API 33+)
   - CAMERA
   - INTERNET
 - **Namespace**: com.example.sz_pic_flutter
 - **Build**: Kotlin-based Gradle scripts
-- **Status**: ✅ Fully functional and tested on Android emulator
+- **ProGuard Rules**: Created `proguard-rules.pro` to keep plugin classes from obfuscation
+  - Keeps Flutter plugin classes (`io.flutter.plugins.**`)
+  - Keeps image_picker classes (`io.flutter.plugins.imagepicker.**`)
+  - Keeps Pigeon generated classes (`dev.flutter.pigeon.**`)
+  - Enabled `isMinifyEnabled = true` for release builds
+- **Status**: ✅ Fully functional and tested on Android 14 (Pixel 9a)
 
 ### iOS (Planned)
 - **Deployment Target**: iOS 12.0+
