@@ -22,9 +22,9 @@
 - ✅ [`LayoutSuggestionRequest/Response`](lib/core/models/ai_models.dart) - AI API models
 
 ### Services
-- ✅ [`AIProvider`](lib/core/services/ai_provider.dart) - Abstract AI provider interface
-- ✅ [`OllamaProvider`](lib/core/services/ollama_provider.dart) - Local Ollama integration
-- ✅ [`OpenRouterProvider`](lib/core/services/openrouter_provider.dart) - Cloud AI integration
+- 🚧 [`AIProvider`](lib/core/services/ai_provider.dart) - Abstract AI provider interface
+- 🚧 [`OllamaProvider`](lib/core/services/ollama_provider.dart) - Local Ollama integration
+- 🚧 [`OpenRouterProvider`](lib/core/services/openrouter_provider.dart) - Cloud AI integration
 - ✅ [`CollageEngine`](lib/core/services/collage_engine.dart) - Layout generation algorithms:
   - Grid layout (evenly distributed cells)
   - Masonry layout (Pinterest-style)
@@ -39,43 +39,43 @@
 - ✅ [`FreestyleEditorScreen`](lib/screens/collage/freestyle_editor_screen.dart) - Interactive freestyle editor with drag, resize, rotate, and layer management
 
 ### AI Integration
-- ✅ Dual AI provider support (Ollama + OpenRouter)
-- ✅ Layout suggestion generation
-- ✅ Color scheme recommendations
-- ✅ AI availability checking
-- ✅ Graceful fallback handling
+- 🚧 Dual AI provider support (Ollama + OpenRouter)
+- 🚧 Layout suggestion generation
+- 🚧 Color scheme recommendations
+- 🚧 AI availability checking
+- 🚧 Graceful fallback handling
 
 ### Export Features
 - ✅ PNG export (high quality)
 - ✅ JPEG export (smaller file size)
 - ✅ RepaintBoundary for canvas capture
 - ✅ File system storage with user-selected directory
-- ✅ Web download support
+- 🚧 Web download support
 
 ## 🚧 In Progress / Partially Complete
 
 ### Collage Features
-- 🚧 Background color customization (placeholder UI exists)
-- 🚧 Aspect ratio adjustment (placeholder UI exists)
-- 🚧 Spacing controls (placeholder UI exists)
-- ✅ Image shuffling (complete)
+- ✅ Background color customization 
+- ✅ Aspect ratio adjustment 
+- ✅ Spacing controls 
+- ✅ Image shuffling
 - ✅ Freestyle editor with full interactive controls (drag, resize, rotate, layer management)
 - 🚧 Drag-and-drop cell editing for other layouts (grid, masonry, template)
 
 ### Export Features
 - ✅ JPEG export (complete)
-- 🚧 PDF export (planned)
+- ✅ PDF export (planned)
 - 🚧 Share functionality
 
 ## ⏳ Planned Features
 
 ### Slideshow Creator
-- ⏳ Slideshow creation UI
-- ⏳ Timeline-based editor
-- ⏳ Transition effect selector
+- ✅ Slideshow creation UI
+- ✅ Timeline-based editor
+- ✅ Transition effect selector
 - ⏳ Music/audio integration
-- ⏳ Preview playback
-- ⏳ Video export (MP4/MOV/GIF)
+- ✅ Preview playback
+- ✅ Video export (MP4)
 
 ### Project Management
 - ⏳ Save/load collage projects
