@@ -5,6 +5,7 @@ import '../../core/models/image_item.dart';
 import '../../core/models/slideshow_models.dart';
 import '../../core/services/image_picker_service.dart';
 import '../../core/services/slideshow_engine.dart';
+import '../../core/widgets/image_item_widget.dart';
 import '../../core/widgets/loading_dialog.dart';
 import 'slideshow_editor_screen.dart';
 
@@ -152,8 +153,8 @@ class _SlideshowCreatorScreenState extends State<SlideshowCreatorScreen> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.file(
-                        File(image.path),
+                      child: ImageItemWidget(
+                        image: image,
                         fit: BoxFit.cover,
                         width: double.infinity,
                         height: double.infinity,
