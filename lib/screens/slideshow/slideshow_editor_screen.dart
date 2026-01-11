@@ -13,6 +13,7 @@ import '../../core/models/image_item.dart';
 import '../../core/models/slideshow_models.dart';
 import '../../core/services/slideshow_engine.dart';
 import '../../core/utils/export_helper.dart';
+import '../../core/widgets/image_item_widget.dart';
 
 enum SlideshowExportFormat { pngSequence, video, projectFile }
 
@@ -303,8 +304,8 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
   Widget _buildSlideImage(Slide slide) {
     return FittedBox(
       fit: BoxFit.contain,
-      child: Image.file(
-        File(slide.image.path),
+      child: ImageItemWidget(
+        image: slide.image,
         key: ValueKey(slide.id),
       ),
     );
@@ -1032,30 +1033,12 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.image),
-              title: Text(SlideshowExportFormat.pngSequence.displayName),
-              subtitle: Text(SlideshowExportFormat.pngSequence.description),
-              onTap: () {
-                Navigator.pop(context);
-                _exportSlideshow(SlideshowExportFormat.pngSequence);
-              },
-            ),
-            ListTile(
               leading: const Icon(Icons.videocam),
               title: Text(SlideshowExportFormat.video.displayName),
               subtitle: Text(SlideshowExportFormat.video.description),
               onTap: () {
                 Navigator.pop(context);
                 _exportSlideshow(SlideshowExportFormat.video);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.save_alt),
-              title: Text(SlideshowExportFormat.projectFile.displayName),
-              subtitle: Text(SlideshowExportFormat.projectFile.description),
-              onTap: () {
-                Navigator.pop(context);
-                _exportSlideshow(SlideshowExportFormat.projectFile);
               },
             ),
           ],
