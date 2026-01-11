@@ -395,58 +395,59 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Collage Canvas
-          Expanded(
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: _currentLayout.aspectRatio,
-                child: Container(
-                  margin: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final canvasSize = Size(constraints.maxWidth, constraints.maxHeight);
-
-                      return RepaintBoundary(
-                        key: _collageKey,
-                        child: Container(
-                          width: constraints.maxWidth,
-                          height: constraints.maxHeight,
-                          color: Color(_currentLayout.backgroundColor),
-                          child: Stack(
-                            children: _currentLayout.cells.map((cell) {
-                              final image = _getImageForCell(cell);
-                              return _CollageCell(
-                                cell: cell,
-                                image: image,
-                                canvasSize: canvasSize,
-                              );
-                            }).toList(),
-                          ),
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        child: Column(
+          children: [
+            // Collage Canvas
+            Expanded(
+              child: Center(
+                child: AspectRatio(
+                  aspectRatio: _currentLayout.aspectRatio,
+                  child: Container(
+                    margin: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                      );
-                    },
+                      ],
+                    ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final canvasSize = Size(constraints.maxWidth, constraints.maxHeight);
+
+                        return RepaintBoundary(
+                          key: _collageKey,
+                          child: Container(
+                            width: constraints.maxWidth,
+                            height: constraints.maxHeight,
+                            color: Color(_currentLayout.backgroundColor),
+                            child: Stack(
+                              children: _currentLayout.cells.map((cell) {
+                                final image = _getImageForCell(cell);
+                                return _CollageCell(
+                                  cell: cell,
+                                  image: image,
+                                  canvasSize: canvasSize,
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          // Bottom controls
-          SafeArea(
-            top: false,
-            child: Container(
+            // Bottom controls
+            Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
@@ -508,8 +509,8 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -7,8 +7,11 @@
 
 ## Recent Changes
 
-### Current Session (Jan 9, 2026)
-1. **Slideshow Creator AppBar Layout**: Moved home button to far left position in slideshow creator screen AppBar
+### Current Session (Jan 10, 2026)
+1. **Landscape Navigation Bar Fix**: Fixed UI appearing under Android 3-button navigation bar in landscape mode
+   - Applied `padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewPadding.bottom)` to `Scaffold` bodies in all screens
+   - Fixed screens: HomeScreen, CollageCreatorScreen, CollageEditorScreen, FreestyleEditorScreen, SlideshowCreatorScreen, SlideshowEditorScreen
+   - Content now properly respects system navigation bars in landscape orientation
    - Order changed from: Add Photos → Next → Home
    - New order: Home → Add Photos → Next
    - Updated [`slideshow_creator_screen.dart`](lib/screens/slideshow/slideshow_creator_screen.dart:48-68)

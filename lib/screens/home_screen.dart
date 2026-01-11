@@ -19,19 +19,27 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
+    // Debug logging for landscape navigation bar
+    final viewPadding = MediaQuery.of(context).viewPadding;
+    debugPrint('=== HomeScreen Debug ===');
+    debugPrint('viewPadding: bottom=${viewPadding.bottom}');
+    debugPrint('viewInsets: bottom=${MediaQuery.of(context).viewInsets.bottom}');
+    debugPrint('orientation: ${MediaQuery.of(context).orientation}');
+    
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.primary.withOpacity(0.1),
-              theme.colorScheme.secondary.withOpacity(0.1),
-            ],
+      body: SafeArea(
+        child: Container(
+          padding: EdgeInsets.only(bottom: viewPadding.bottom), // Add bottom padding for navigation bar
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                theme.colorScheme.primary.withOpacity(0.1),
+                theme.colorScheme.secondary.withOpacity(0.1),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
           child: Column(
             children: [
               // Header
@@ -54,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'AI-Powered Collage & Slideshow Creator',
+                      'Collage & Slideshow Creator',
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: theme.colorScheme.onSurface.withOpacity(0.7),
                       ),
@@ -66,45 +74,33 @@ class _HomeScreenState extends State<HomeScreen> {
               
               // Main Menu Cards
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _MenuCard(
-                        icon: Icons.grid_on_rounded,
-                        title: 'Create Collage',
-                        subtitle: 'Combine photos into beautiful layouts',
-                        color: theme.colorScheme.primary,
-                        onTap: _isLoading ? null : () => _navigateToCollageCreator(context),
-                        isLoading: _isLoading,
-                      ),
-                      const SizedBox(height: 16),
-                      _MenuCard(
-                        icon: Icons.slideshow_rounded,
-                        title: 'Create Slideshow',
-                        subtitle: 'Make animated photo presentations',
-                        color: theme.colorScheme.secondary,
-                        onTap: _isLoading ? null : () => _navigateToSlideshowCreator(context),
-                        isLoading: _isLoading,
-                      ),
-                      const SizedBox(height: 16),
-                      _MenuCard(
-                        icon: Icons.folder_rounded,
-                        title: 'My Projects',
-                        subtitle: 'View and edit saved projects',
-                        color: theme.colorScheme.tertiary,
-                        onTap: () => _showComingSoon(context, 'My Projects'),
-                      ),
-                      const SizedBox(height: 16),
-                      _MenuCard(
-                        icon: Icons.settings_rounded,
-                        title: 'Settings',
-                        subtitle: 'Configure AI and preferences',
-                        color: Colors.grey,
-                        onTap: () => _showComingSoon(context, 'Settings'),
-                      ),
-                    ],
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 16), // Add some top spacing for scroll
+                        _MenuCard(
+                          icon: Icons.grid_on_rounded,
+                          title: 'Create Collage',
+                          subtitle: 'Combine photos into beautiful layouts',
+                          color: theme.colorScheme.primary,
+                          onTap: _isLoading ? null : () => _navigateToCollageCreator(context),
+                          isLoading: _isLoading,
+                        ),
+                        const SizedBox(height: 16),
+                        _MenuCard(
+                          icon: Icons.slideshow_rounded,
+                          title: 'Create Slideshow',
+                          subtitle: 'Make animated photo presentations',
+                          color: theme.colorScheme.secondary,
+                          onTap: _isLoading ? null : () => _navigateToSlideshowCreator(context),
+                          isLoading: _isLoading,
+                        ),
+                        const SizedBox(height: 16), // Add some bottom spacing for scroll
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -113,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  'v0.02 • Made by SZ',
+                  'v0.3',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurface.withOpacity(0.5),
                   ),
