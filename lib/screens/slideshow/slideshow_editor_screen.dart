@@ -113,17 +113,18 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
             onPressed: _showSettings,
             tooltip: 'Settings',
           ),
-          IconButton(
-            icon: _isExporting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.save_rounded),
-            onPressed: _isExporting ? null : _saveProject,
-            tooltip: 'Export',
-          ),
+          if (!kIsWeb)
+            IconButton(
+              icon: _isExporting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.save_rounded),
+              onPressed: _isExporting ? null : _saveProject,
+              tooltip: 'Export',
+            ),
           IconButton(
             icon: const Icon(Icons.home_outlined),
             tooltip: 'Return to Home',
