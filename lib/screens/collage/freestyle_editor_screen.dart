@@ -411,223 +411,224 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Instructions
-          Container(
-            padding: const EdgeInsets.all(12),
-            color: _isInFreeCropMode 
-                ? theme.colorScheme.tertiaryContainer
-                : theme.colorScheme.primaryContainer,
-            child: Row(
-              children: [
-                Icon(
-                  _isInFreeCropMode ? Icons.crop_free : Icons.info_outline,
-                  size: 20,
-                  color: _isInFreeCropMode 
-                      ? theme.colorScheme.onTertiaryContainer
-                      : theme.colorScheme.onPrimaryContainer,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _isInFreeCropMode 
-                        ? 'Drag corners to resize • Drag center to pan'
-                        : 'Tap to select • Drag to move • Drag corners to resize • Use rotation control below',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: _isInFreeCropMode 
-                          ? theme.colorScheme.onTertiaryContainer
-                          : theme.colorScheme.onPrimaryContainer,
+      body: SafeArea(
+        top: false,
+        bottom: true,
+        child: Column(
+          children: [
+            // Instructions
+            Container(
+              padding: const EdgeInsets.all(12),
+              color: _isInFreeCropMode 
+                  ? theme.colorScheme.tertiaryContainer
+                  : theme.colorScheme.primaryContainer,
+              child: Row(
+                children: [
+                  Icon(
+                    _isInFreeCropMode ? Icons.crop_free : Icons.info_outline,
+                    size: 20,
+                    color: _isInFreeCropMode 
+                        ? theme.colorScheme.onTertiaryContainer
+                        : theme.colorScheme.onPrimaryContainer,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _isInFreeCropMode 
+                          ? 'Drag corners to resize • Drag center to pan'
+                          : 'Tap to select • Drag to move • Drag corners to resize • Use rotation control below',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: _isInFreeCropMode 
+                            ? theme.colorScheme.onTertiaryContainer
+                            : theme.colorScheme.onPrimaryContainer,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          // Collage Canvas
-          Expanded(
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: _currentLayout.aspectRatio,
-                child: Container(
-                  margin: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final canvasSize = Size(
-                        constraints.maxWidth,
-                        constraints.maxHeight,
-                      );
+            // Collage Canvas
+            Expanded(
+              child: Center(
+                child: AspectRatio(
+                  aspectRatio: _currentLayout.aspectRatio,
+                  child: Container(
+                    margin: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final canvasSize = Size(
+                          constraints.maxWidth,
+                          constraints.maxHeight,
+                        );
 
-                      return RepaintBoundary(
-                        key: _collageKey,
-                        child: Container(
-                          width: constraints.maxWidth,
-                          height: constraints.maxHeight,
-                          color: Color(_currentLayout.backgroundColor),
-                          child: Stack(
-                            children: [
-                              ..._currentLayout.cells.map((cell) {
-                                final image = _getImageForCell(cell);
-                                final isSelected = _selectedCellId == cell.id;
-                                return _FreestyleCell(
-                                  cell: cell,
-                                  image: image,
-                                  canvasSize: canvasSize,
-                                  isSelected: isSelected,
-                                  isInFreeCropMode: _isInFreeCropMode && isSelected,
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedCellId = cell.id;
-                                    });
-                                  },
-                                  onDragStart: (details) {
-                                    if (_isInFreeCropMode && _selectedCellId == cell.id) {
-                                      // Free crop mode: start tracking image offset
+                        return RepaintBoundary(
+                          key: _collageKey,
+                          child: Container(
+                            width: constraints.maxWidth,
+                            height: constraints.maxHeight,
+                            color: Color(_currentLayout.backgroundColor),
+                            child: Stack(
+                              children: [
+                                ..._currentLayout.cells.map((cell) {
+                                  final image = _getImageForCell(cell);
+                                  final isSelected = _selectedCellId == cell.id;
+                                  return _FreestyleCell(
+                                    cell: cell,
+                                    image: image,
+                                    canvasSize: canvasSize,
+                                    isSelected: isSelected,
+                                    isInFreeCropMode: _isInFreeCropMode && isSelected,
+                                    onTap: () {
                                       setState(() {
+                                        _selectedCellId = cell.id;
+                                      });
+                                    },
+                                    onDragStart: (details) {
+                                      if (_isInFreeCropMode && _selectedCellId == cell.id) {
+                                        // Free crop mode: start tracking image offset
+                                        setState(() {
+                                          _dragStartOffset = details.globalPosition;
+                                          _freeCropStartOffset = Offset(
+                                            cell.imageOffsetX * canvasSize.width,
+                                            cell.imageOffsetY * canvasSize.height,
+                                          );
+                                        });
+                                      } else {
+                                        // Normal mode: move cell
+                                        setState(() {
+                                          _selectedCellId = cell.id;
+                                          _dragStartOffset = details.globalPosition;
+                                          _cellStartOffset = Offset(
+                                            cell.x * canvasSize.width,
+                                            cell.y * canvasSize.height,
+                                          );
+                                        });
+                                      }
+                                    },
+                                    onDragUpdate: (details) {
+                                      if (_isInFreeCropMode && _selectedCellId == cell.id && _freeCropStartOffset != null) {
+                                        // Free crop mode: update image offset
+                                        final delta = details.globalPosition - _dragStartOffset!;
+                                        final newOffset = _freeCropStartOffset! + delta;
+                                        _updateCellImageOffset(cell.id, newOffset.dx, newOffset.dy, canvasSize);
+                                      } else if (_dragStartOffset != null && _cellStartOffset != null) {
+                                        // Normal mode: move cell
+                                        final delta = details.globalPosition - _dragStartOffset!;
+                                        final newPosition = _cellStartOffset! + delta;
+                                        _updateCellPosition(
+                                          cell.id,
+                                          newPosition,
+                                          canvasSize,
+                                        );
+                                      }
+                                    },
+                                    onDragEnd: (details) {
+                                      setState(() {
+                                        if (_isInFreeCropMode) {
+                                          _freeCropStartOffset = null;
+                                          _activeCornerId = null;
+                                        } else {
+                                          _dragStartOffset = null;
+                                          _cellStartOffset = null;
+                                        }
+                                      });
+                                    },
+                                    onResizeStart: (details, cornerId) {
+                                      setState(() {
+                                        _selectedCellId = cell.id;
+                                        _activeCornerId = cornerId;
                                         _dragStartOffset = details.globalPosition;
+                                        _resizeStartDistance = details.globalPosition.distance;
+                                        _cellStartSize = Size(
+                                          cell.width * canvasSize.width,
+                                          cell.height * canvasSize.height,
+                                        );
                                         _freeCropStartOffset = Offset(
                                           cell.imageOffsetX * canvasSize.width,
                                           cell.imageOffsetY * canvasSize.height,
                                         );
                                       });
-                                    } else {
-                                      // Normal mode: move cell
+                                    },
+                                    onResizeUpdate: (details, cornerId) {
+                                      if (_dragStartOffset != null && _cellStartSize != null && _freeCropStartOffset != null) {
+                                        if (_isInFreeCropMode && _selectedCellId == cell.id) {
+                                          // Free crop mode: resize image with corner
+                                          final currentDistance = details.globalPosition.distance;
+                                          final scaleDelta = currentDistance / (_resizeStartDistance ?? 1.0);
+                                          
+                                          // Calculate new scale based on corner drag
+                                          final cellCenterX = cell.width * canvasSize.width / 2;
+                                          final cellCenterY = cell.height * canvasSize.height / 2;
+                                          final dragVector = details.globalPosition - _dragStartOffset!;
+                                          
+                                          // Adjust scale based on drag distance
+                                          final newScale = cell.scale * (1.0 + dragVector.distance / 500);
+                                          
+                                          // Update offset based on which corner
+                                          double newOffsetX = _freeCropStartOffset!.dx;
+                                          double newOffsetY = _freeCropStartOffset!.dy;
+                                          
+                                          // Adjust offset based on corner
+                                          if (cornerId == 'tl' || cornerId == 'bl') {
+                                            newOffsetX += dragVector.dx / 2;
+                                          }
+                                          if (cornerId == 'tl' || cornerId == 'tr') {
+                                            newOffsetY += dragVector.dy / 2;
+                                          }
+                                          
+                                          _updateCellImageScaleAndOffset(
+                                            cell.id,
+                                            newScale,
+                                            newOffsetX,
+                                            newOffsetY,
+                                            canvasSize,
+                                          );
+                                        } else {
+                                          // Normal mode: resize cell
+                                          final currentDistance = details.globalPosition.distance;
+                                          final scale = currentDistance / (_resizeStartDistance ?? 1.0);
+                                          final newSize = Size(
+                                            _cellStartSize!.width * scale,
+                                            _cellStartSize!.height * scale,
+                                          );
+                                          _updateCellSize(cell.id, newSize, canvasSize);
+                                        }
+                                      }
+                                    },
+                                    onResizeEnd: (details) {
                                       setState(() {
-                                        _selectedCellId = cell.id;
-                                        _dragStartOffset = details.globalPosition;
-                                        _cellStartOffset = Offset(
-                                          cell.x * canvasSize.width,
-                                          cell.y * canvasSize.height,
-                                        );
-                                      });
-                                    }
-                                  },
-                                  onDragUpdate: (details) {
-                                    if (_isInFreeCropMode && _selectedCellId == cell.id && _freeCropStartOffset != null) {
-                                      // Free crop mode: update image offset
-                                      final delta = details.globalPosition - _dragStartOffset!;
-                                      final newOffset = _freeCropStartOffset! + delta;
-                                      _updateCellImageOffset(cell.id, newOffset.dx, newOffset.dy, canvasSize);
-                                    } else if (_dragStartOffset != null && _cellStartOffset != null) {
-                                      // Normal mode: move cell
-                                      final delta = details.globalPosition - _dragStartOffset!;
-                                      final newPosition = _cellStartOffset! + delta;
-                                      _updateCellPosition(
-                                        cell.id,
-                                        newPosition,
-                                        canvasSize,
-                                      );
-                                    }
-                                  },
-                                  onDragEnd: (details) {
-                                    setState(() {
-                                      if (_isInFreeCropMode) {
+                                        _resizeStartDistance = null;
+                                        _cellStartSize = null;
                                         _freeCropStartOffset = null;
                                         _activeCornerId = null;
-                                      } else {
-                                        _dragStartOffset = null;
-                                        _cellStartOffset = null;
-                                      }
-                                    });
-                                  },
-                                  onResizeStart: (details, cornerId) {
-                                    setState(() {
-                                      _selectedCellId = cell.id;
-                                      _activeCornerId = cornerId;
-                                      _dragStartOffset = details.globalPosition;
-                                      _resizeStartDistance = details.globalPosition.distance;
-                                      _cellStartSize = Size(
-                                        cell.width * canvasSize.width,
-                                        cell.height * canvasSize.height,
-                                      );
-                                      _freeCropStartOffset = Offset(
-                                        cell.imageOffsetX * canvasSize.width,
-                                        cell.imageOffsetY * canvasSize.height,
-                                      );
-                                    });
-                                  },
-                                  onResizeUpdate: (details, cornerId) {
-                                    if (_dragStartOffset != null && _cellStartSize != null && _freeCropStartOffset != null) {
-                                      if (_isInFreeCropMode && _selectedCellId == cell.id) {
-                                        // Free crop mode: resize image with corner
-                                        final currentDistance = details.globalPosition.distance;
-                                        final scaleDelta = currentDistance / (_resizeStartDistance ?? 1.0);
-                                        
-                                        // Calculate new scale based on corner drag
-                                        final cellCenterX = cell.width * canvasSize.width / 2;
-                                        final cellCenterY = cell.height * canvasSize.height / 2;
-                                        final dragVector = details.globalPosition - _dragStartOffset!;
-                                        
-                                        // Adjust scale based on drag distance
-                                        final newScale = cell.scale * (1.0 + dragVector.distance / 500);
-                                        
-                                        // Update offset based on which corner
-                                        double newOffsetX = _freeCropStartOffset!.dx;
-                                        double newOffsetY = _freeCropStartOffset!.dy;
-                                        
-                                        // Adjust offset based on corner
-                                        if (cornerId == 'tl' || cornerId == 'bl') {
-                                          newOffsetX += dragVector.dx / 2;
-                                        }
-                                        if (cornerId == 'tl' || cornerId == 'tr') {
-                                          newOffsetY += dragVector.dy / 2;
-                                        }
-                                        
-                                        _updateCellImageScaleAndOffset(
-                                          cell.id,
-                                          newScale,
-                                          newOffsetX,
-                                          newOffsetY,
-                                          canvasSize,
-                                        );
-                                      } else {
-                                        // Normal mode: resize cell
-                                        final currentDistance = details.globalPosition.distance;
-                                        final scale = currentDistance / (_resizeStartDistance ?? 1.0);
-                                        final newSize = Size(
-                                          _cellStartSize!.width * scale,
-                                          _cellStartSize!.height * scale,
-                                        );
-                                        _updateCellSize(cell.id, newSize, canvasSize);
-                                      }
-                                    }
-                                  },
-                                  onResizeEnd: (details) {
-                                    setState(() {
-                                      _resizeStartDistance = null;
-                                      _cellStartSize = null;
-                                      _freeCropStartOffset = null;
-                                      _activeCornerId = null;
-                                    });
-                                  },
-                                );
-                              }),
-                            ],
+                                      });
+                                    },
+                                  );
+                                }),
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          // Bottom controls
-          SafeArea(
-            top: false,
-            child: Container(
+            // Bottom controls
+            Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
@@ -698,8 +699,8 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

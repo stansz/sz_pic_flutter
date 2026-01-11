@@ -66,18 +66,21 @@ class _SlideshowCreatorScreenState extends State<SlideshowCreatorScreen> {
             ),
         ],
       ),
-      body: Column(
-        children: [
-          // Image Selection Area
-          Expanded(
-            child: _images.isEmpty
-                ? _buildEmptyState(context)
-                : _buildImageGrid(context),
-          ),
+      body: SafeArea(
+        bottom: true,
+        child: Column(
+          children: [
+            // Image Selection Area
+            Expanded(
+              child: _images.isEmpty
+                  ? _buildEmptyState(context)
+                  : _buildImageGrid(context),
+            ),
 
-          // Controls Section
-          if (_images.isNotEmpty) _buildControls(context),
-        ],
+            // Controls Section
+            if (_images.isNotEmpty) _buildControls(context),
+          ],
+        ),
       ),
     );
   }

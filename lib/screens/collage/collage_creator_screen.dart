@@ -192,7 +192,9 @@ class _CollageCreatorScreenState extends State<CollageCreatorScreen> {
           ),
         ],
       ),
-      body: _layouts == null
+      body: SafeArea(
+        bottom: true,
+        child: _layouts == null
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
@@ -268,6 +270,7 @@ class _CollageCreatorScreenState extends State<CollageCreatorScreen> {
                 ),
               ],
             ),
+      ),
     );
   }
 }
