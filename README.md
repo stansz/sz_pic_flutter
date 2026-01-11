@@ -72,7 +72,7 @@ See [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for detailed progress
 
 ## 🙏 Acknowledgments
 
-- Vibed coded with help of Kilo Code in Android Studio on Macbook M4 with specical thanks to my pug, Sparky
+- Vibed coded with help of Kilo Code in Android Studio on Macbook M4 with special thanks to my pug, Sparky
 
 ## 📞 Support
 
