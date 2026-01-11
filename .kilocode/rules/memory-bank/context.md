@@ -7,6 +7,22 @@
 
 ## Recent Changes
 
+### Current Session (Jan 11, 2026)
+1. **Android 14 Image Picker Channel Error Fix**: Fixed platform channel error when picking images on Pixel 9a (Android 14)
+   - Error: `platformexception(channel-error: unable to establish connection to channel: "dev.flutter.pigeon.image_picker_android.imagepickerapi.pickimages")`
+   - **Debug vs Release Issue**: Debug APK worked but release APK failed due to ProGuard/R8 obfuscation
+   - **Android 14 Permissions Fix**: Added `READ_MEDIA_IMAGES` and `READ_MEDIA_VIDEO` permissions for Android 13+ (API 33+)
+   - Limited legacy `READ_EXTERNAL_STORAGE` to Android 12 and below (`android:maxSdkVersion="32"`)
+   - Limited `WRITE_EXTERNAL_STORAGE` to Android 9 and below (`android:maxSdkVersion="28"`)
+   - Added FileProvider configuration for camera capture support
+   - **ProGuard Rules Fix**: Created [`proguard-rules.pro`](android/app/proguard-rules.pro:1) with rules to keep:
+     - Flutter plugin classes (`io.flutter.plugins.**`)
+     - Image picker classes (`io.flutter.plugins.imagepicker.**`)
+     - Pigeon generated API classes (`dev.flutter.pigeon.**`)
+     - All other plugin classes (file_picker, permission_handler, FFmpegKit, etc.)
+   - Enabled `isMinifyEnabled = true` in [`build.gradle.kts`](android/app/build.gradle.kts:33) for release builds with proguard rules
+   - Release APK now works correctly on Android 14 devices
+
 ### Current Session (Jan 10, 2026)
 1. **Landscape Navigation Bar Fix**: Fixed UI appearing under Android 3-button navigation bar in landscape mode
    - Applied `padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewPadding.bottom)` to `Scaffold` bodies in all screens
