@@ -1131,6 +1131,16 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
           ),
         );
       }
+
+      // Clean up the temporary frame folder after successful export
+      try {
+        if (await exportDir.exists()) {
+          await exportDir.delete(recursive: true);
+          debugPrint('[exportVideo] cleaned up temporary frame folder: ${exportDir.path}');
+        }
+      } catch (e) {
+        debugPrint('[exportVideo] failed to clean up temporary folder: $e');
+      }
     } finally {
       if (mounted && _project.slides.isNotEmpty) {
         _goToSlide(originalIndex, animate: false);
