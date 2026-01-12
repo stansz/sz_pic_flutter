@@ -2,15 +2,20 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new/return_code.dart';
 import '../../core/models/image_item.dart';
 import '../../core/models/slideshow_models.dart';
+import '../../core/models/music_track.dart';
+import '../../core/services/music_library.dart';
+import '../../core/services/music_service.dart';
 import '../../core/services/slideshow_engine.dart';
 import '../../core/utils/export_helper.dart';
 import '../../core/widgets/image_item_widget.dart';
@@ -66,10 +71,17 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
   final GlobalKey _slideshowKey = GlobalKey();
   bool _isExporting = false;
 
+  // Music
+  final MusicService _musicService = MusicService();
+  MusicTrack? _selectedTrack;
+  double _musicVolume = 0.8;
+  Timer? _musicFadeOutTimer;
+
   @override
   void initState() {
     super.initState();
     _project = widget.project;
+    _selectedTrack = _resolveTrackFromProject(_project.musicPath);
     _remainingTime = _project.slides.isNotEmpty
         ? _project.slides[0].duration
         : Duration.zero;
@@ -93,7 +105,9 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
   @override
   void dispose() {
     _stopPlayback();
+    _stopMusic();
     _transitionController.dispose();
+    _musicService.dispose();
     super.dispose();
   }
 
@@ -417,6 +431,82 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
     return type ?? TransitionType.fade;
   }
 
+  MusicTrack? _resolveTrackFromProject(String? path) {
+    if (path == null) return null;
+    try {
+      return MusicLibrary.tracks.firstWhere((t) => t.assetPath == path || t.id == path);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _setSelectedTrack(MusicTrack track) async {
+    setState(() {
+      _selectedTrack = track;
+      _project = SlideshowEngine().addMusic(_project, track.assetPath);
+    });
+  }
+
+  Future<void> _clearSelectedTrack() async {
+    setState(() {
+      _selectedTrack = null;
+      _project = SlideshowEngine().removeMusic(_project);
+    });
+    _cancelMusicFadeOut();
+    await _musicService.stop();
+  }
+
+  Future<void> _playMusicIfSelected() async {
+    if (_selectedTrack == null || kIsWeb) return;
+    final fadeDuration = _adaptiveMusicFadeDuration;
+    _cancelMusicFadeOut();
+    final played = await _musicService.playTrack(
+      _selectedTrack!,
+      initialVolume: 0.0,
+    );
+    if (!played && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to play ${_selectedTrack!.title}. Check assets/music files.'),
+        ),
+      );
+    } else if (played) {
+      _musicService.fadeToVolume(_musicVolume, fadeDuration);
+      _scheduleMusicFadeOut(fadeDuration);
+    }
+  }
+
+  Future<void> _stopMusic() async {
+    _cancelMusicFadeOut();
+    await _musicService.stop();
+  }
+
+  Duration get _adaptiveMusicFadeDuration {
+    final totalMs = _project.totalDuration.inMilliseconds;
+    const minFadeMs = 1000;
+    final candidateMs = max(minFadeMs, (totalMs * 0.25).round());
+    final capMs = max(minFadeMs, (totalMs ~/ 2));
+    final fadeMs = min(candidateMs, capMs);
+    return Duration(milliseconds: fadeMs);
+  }
+
+  void _scheduleMusicFadeOut(Duration fadeDuration) {
+    _cancelMusicFadeOut();
+    final delay = _project.totalDuration - fadeDuration;
+    if (delay <= Duration.zero) {
+      _musicService.fadeToVolume(0.0, fadeDuration);
+      return;
+    }
+    _musicFadeOutTimer = Timer(delay, () {
+      _musicService.fadeToVolume(0.0, fadeDuration);
+    });
+  }
+
+  void _cancelMusicFadeOut() {
+    _musicFadeOutTimer?.cancel();
+    _musicFadeOutTimer = null;
+  }
+
   void _togglePlayback() {
     if (_isPlaying) {
       _stopPlayback();
@@ -431,6 +521,8 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
     setState(() {
       _isPlaying = true;
     });
+
+    _playMusicIfSelected();
 
     _playbackTimer = Timer.periodic(
       const Duration(milliseconds: 100),
@@ -455,10 +547,11 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
       },
     );
   }
-
+ 
   void _stopPlayback() {
     _playbackTimer?.cancel();
     _playbackTimer = null;
+    _stopMusic();
     setState(() {
       _isPlaying = false;
     });
@@ -512,40 +605,148 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
   }
 
   void _showMusicOptions() {
+    if (kIsWeb) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Audio playback is disabled on web builds.'),
+        ),
+      );
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.music_note_rounded),
-              title: const Text('Add Music'),
-              onTap: () {
-                Navigator.of(context).pop();
-                // TODO: Implement music picker
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Music feature coming soon'),
+      isScrollControlled: true,
+      builder: (context) {
+        final bottomPadding = MediaQuery.of(context).viewPadding.bottom + 16;
+        return Padding(
+          padding: EdgeInsets.only(bottom: bottomPadding),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.music_note_rounded),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Background Music',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Built-in tracks (copyright-free). Tap to select. Attribution is listed below.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 320,
+                  child: ListView.builder(
+                    itemCount: MusicLibrary.tracks.length,
+                    itemBuilder: (context, index) {
+                      final track = MusicLibrary.tracks[index];
+                      final isSelected = _selectedTrack?.id == track.id;
+                      return Card(
+                        child: ListTile(
+                          leading: Icon(
+                            isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                          ),
+                          title: Text(track.genre),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.play_arrow_rounded),
+                            onPressed: () {
+                              _musicService.playTrack(track);
+                            },
+                            tooltip: 'Preview',
+                          ),
+                          onTap: () async {
+                            await _setSelectedTrack(track);
+                            if (mounted) Navigator.of(context).pop();
+                            _playMusicIfSelected();
+                          },
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Text('Volume'),
+                    Expanded(
+                      child: Slider(
+                        value: _musicVolume,
+                        min: 0.0,
+                        max: 1.0,
+                        onChanged: (value) {
+                          setState(() {
+                            _musicVolume = value;
+                          });
+                          _musicService.setVolume(value);
+                        },
+                      ),
+                    ),
+                    Text('${(_musicVolume * 100).round()}%'),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                if (_selectedTrack != null)
+                  Text(
+                    'Selected: ${_selectedTrack!.title} — ${_selectedTrack!.attributionText}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: _selectedTrack != null
+                          ? () {
+                              _clearSelectedTrack();
+                              Navigator.of(context).pop();
+                            }
+                          : null,
+                      icon: const Icon(Icons.music_off_rounded),
+                      label: const Text('Remove Music'),
+                    ),
+                    const SizedBox(width: 12),
+                    TextButton.icon(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: const Text('Attribution'),
+                            content: Text(
+                              'Refer to assets/music/licenses.md for full attribution.\n\n'
+                              '${MusicLibrary.tracks.map((t) => '- ${t.attributionText}').join('\n')}',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Close'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.info_outline),
+                      label: const Text('Attribution'),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            if (_project.musicPath != null)
-              ListTile(
-                leading: const Icon(Icons.music_off_rounded),
-                title: const Text('Remove Music'),
-                onTap: () {
-                  setState(() {
-                    _project = SlideshowEngine().removeMusic(_project);
-                  });
-                  Navigator.of(context).pop();
-                },
-              ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -873,21 +1074,28 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
       await listFile.writeAsString(listContents);
       debugPrint('[exportVideo] frames manifest path=${listFile.path}\n$listContents');
 
+      final audioPath = await _materializeSelectedAudioFile();
+
       final outputPath = p.join(selectedDirectory, 'slideshow_$timestamp.mp4');
-      final ffmpegCommand = [
+      
+      // Match input aspect ratio - only ensure even dimensions
+      final ffmpegCommandParts = <String>[
         '-y',
         '-f concat',
         '-safe 0',
         '-i "${listFile.path}"',
+        if (audioPath != null) '-i "$audioPath"',
         '-fps_mode vfr',
         '-vf "scale=trunc(iw/2)*2:trunc(ih/2)*2"',
         '-pix_fmt yuv420p',
         '-c:v libx264',
         '-preset veryfast',
         '-crf 20',
+        if (audioPath != null) ...['-c:a aac', '-b:a 192k', '-shortest'],
         '-movflags +faststart',
         '"$outputPath"',
-      ].join(' ');
+      ];
+      final ffmpegCommand = ffmpegCommandParts.join(' ');
       debugPrint('[exportVideo] running ffmpeg: $ffmpegCommand');
 
       final session = await FFmpegKit.execute(ffmpegCommand);
@@ -924,6 +1132,16 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
             ),
           ),
         );
+      }
+
+      // Clean up the temporary frame folder after successful export
+      try {
+        if (await exportDir.exists()) {
+          await exportDir.delete(recursive: true);
+          debugPrint('[exportVideo] cleaned up temporary frame folder: ${exportDir.path}');
+        }
+      } catch (e) {
+        debugPrint('[exportVideo] failed to clean up temporary folder: $e');
       }
     } finally {
       if (mounted && _project.slides.isNotEmpty) {
@@ -1019,7 +1237,22 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
     return normalized.replaceAll("'", "\\'");
   }
 
-  void _showExportOptions() {
+  Future<String?> _materializeSelectedAudioFile() async {
+    if (_selectedTrack == null) return null;
+    try {
+      final data = await rootBundle.load(_selectedTrack!.assetPath);
+      final tempDir = await Directory.systemTemp.createTemp('slideshow_audio_');
+      final audioPath = p.join(tempDir.path, p.basename(_selectedTrack!.assetPath));
+      final file = File(audioPath);
+      await file.writeAsBytes(data.buffer.asUint8List());
+      return audioPath;
+    } catch (e) {
+      debugPrint('[exportVideo] failed to materialize audio: $e');
+      return null;
+    }
+  }
+ 
+   void _showExportOptions() {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
