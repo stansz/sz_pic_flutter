@@ -20,15 +20,6 @@
 
 SZ Picture Create is a cross-platform mobile application that combines powerful collage and slideshow creation tools with AI-driven creative recommendations. Built with Flutter for seamless performance across Android, iOS, and web platforms.
 
-### Why SZ Picture Create?
-
-- **🤖 AI-Powered**: Get intelligent layout suggestions and creative recommendations
-- **🎭 Multiple Layouts**: Grid, Masonry, Template, and Freestyle arrangements
-- **🎬 Rich Slideshows**: Create dynamic presentations with transitions and music
-- **🔒 Privacy-First**: Use local Ollama AI or cloud-based OpenRouter
-- **📱 Cross-Platform**: Single codebase for Android, iOS, and Web
-- **🎨 Intuitive Design**: Material Design 3 with beautiful themes
-
 ## ✨ Features
 
 ### Collage Creator
@@ -40,7 +31,7 @@ SZ Picture Create is a cross-platform mobile application that combines powerful 
 - ✅ **Image Selection**: Multiple images from gallery or camera
 - ✅ **Export Options**: PNG and JPEG (high quality)
 - ✅ **Freestyle Editor**: Full interactive editing with drag, resize, rotate, and layer management
-- 🚧 **Customization**: Background colors, spacing, aspect ratios (for other layouts)
+- ✅ **Customization**: Background colors, spacing, aspect ratios (for other layouts)
 - ⏳  **AI Suggestions**: Get layout recommendations based on image count
   
 ### AI Integration
@@ -55,8 +46,7 @@ SZ Picture Create is a cross-platform mobile application that combines powerful 
 - ✅ Timeline-based editor
 - ✅ Transition effects (Fade, Slide, Zoom, Dissolve, Ken Burns)
 - ✅ Video export (MP4)
-- ⏳ Music integration
-
+- ✅ Music integration
 
 
 ## 🗺️ Roadmap

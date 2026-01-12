@@ -15,6 +15,12 @@
    - Error handling included to log cleanup failures without failing the export
    - If FFmpeg fails, the temporary folder is preserved for debugging purposes
    - Updated [`_exportVideo()`](lib/screens/slideshow/slideshow_editor_screen.dart:1003) method
+2. **Slideshow Export Aspect Ratio Fix**: Simplified video export to preserve native input aspect ratio
+   - Removed aspect ratio mode selection UI from export dialog
+   - FFmpeg now uses `scale=trunc(iw/2)*2:trunc(ih/2)*2` to preserve native aspect ratio
+   - Video export no longer adds black bars - each frame matches its input image dimensions
+   - Removed unused helper functions: `_getMostCommonAspectRatio`, `_gcd`, `_getTargetDimensionsForCommonRatio`
+   - Updated [`_exportVideo()`](lib/screens/slideshow/slideshow_editor_screen.dart:1081-1089) with simplified FFmpeg command
 
 ### Current Session (Jan 11, 2026)
 1. **Android 14 Image Picker Channel Error Fix**: Fixed platform channel error when picking images on Pixel 9a (Android 14)
@@ -148,7 +154,7 @@
 ## What's Working Well
 
 - ✅ Image selection from gallery with loading feedback
-- ✅ Slideshow video export with automatic temporary folder cleanup
+- ✅ Slideshow video export with native aspect ratio (no black bars)
 - ✅ 4 layout algorithms generating instantly
 - ✅ Layout preview visualization
 - ✅ Collage editor rendering with proper transformations
