@@ -23,6 +23,12 @@
    - Enabled `isMinifyEnabled = true` in [`build.gradle.kts`](android/app/build.gradle.kts:33) for release builds with proguard rules
    - Release APK now works correctly on Android 14 devices
 
+### Current Session (Jan 11, 2026) - Web Export Fix
+1. **Web Slideshow Export Hidden**: Hide export/save option in Create Slideshow section for web only
+   - Added `if (!kIsWeb)` condition to the export IconButton in [`slideshow_editor_screen.dart`](lib/screens/slideshow/slideshow_editor_screen.dart:116)
+   - Export button now only appears on native platforms (Android, iOS, desktop)
+   - Web users do not see the export/save option in the slideshow editor
+
 ### Current Session (Jan 10, 2026)
 1. **Landscape Navigation Bar Fix**: Fixed UI appearing under Android 3-button navigation bar in landscape mode
    - Applied `padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewPadding.bottom)` to `Scaffold` bodies in all screens
