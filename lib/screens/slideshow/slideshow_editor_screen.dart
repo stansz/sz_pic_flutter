@@ -1077,6 +1077,8 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
       final audioPath = await _materializeSelectedAudioFile();
 
       final outputPath = p.join(selectedDirectory, 'slideshow_$timestamp.mp4');
+      
+      // Match input aspect ratio - only ensure even dimensions
       final ffmpegCommandParts = <String>[
         '-y',
         '-f concat',

@@ -2,10 +2,19 @@
 
 ## Project Status
 **Version**: 1.0.0-alpha
-**Last Updated**: January 9, 2026
+**Last Updated**: January 12, 2026
 **Build Status**: ✅ Compiles and runs successfully on Android
 
 ## Recent Changes
+
+### Current Session (Jan 12, 2026)
+1. **Video Export Temporary Folder Cleanup**: Added cleanup logic to delete the temporary frame folder after successful video export
+   - Created temporary folder `slideshow_frames_$timestamp` for PNG frames and manifest during export
+   - After FFmpeg successfully generates the MP4, the temporary folder is automatically deleted
+   - Added `exportDir.delete(recursive: true)` in the finally block after successful export
+   - Error handling included to log cleanup failures without failing the export
+   - If FFmpeg fails, the temporary folder is preserved for debugging purposes
+   - Updated [`_exportVideo()`](lib/screens/slideshow/slideshow_editor_screen.dart:1003) method
 
 ### Current Session (Jan 11, 2026)
 1. **Android 14 Image Picker Channel Error Fix**: Fixed platform channel error when picking images on Pixel 9a (Android 14)
@@ -139,6 +148,7 @@
 ## What's Working Well
 
 - ✅ Image selection from gallery with loading feedback
+- ✅ Slideshow video export with automatic temporary folder cleanup
 - ✅ 4 layout algorithms generating instantly
 - ✅ Layout preview visualization
 - ✅ Collage editor rendering with proper transformations
