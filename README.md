@@ -5,7 +5,6 @@
 ![Flutter](https://img.shields.io/badge/Flutter-3.10.4+-02569B?logo=flutter)
 ![Dart](https://img.shields.io/badge/Dart-3.10.4+-0175C2?logo=dart)
 ![Android](https://img.shields.io/badge/Android-API%2021+-3DDC84?logo=android)
-![License](https://img.shields.io/badge/License-MIT-green)
 ![Status](https://img.shields.io/badge/Status-Alpha-yellow)
 
 **Transform your photos into stunning collages and slideshows with AI-powered creative assistance**
