@@ -34,7 +34,7 @@ class LoadingDialog extends StatelessWidget {
             if (showProgress && current != null && total != null) ...[
               const SizedBox(height: 12),
               Text(
-                'Processing $current of $total images...',
+                '$current of $total frames',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 ),
