@@ -263,6 +263,41 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
                     ),
                   ),
                 ),
+                
+                // Music indicator (shown when music is added)
+                if (_selectedTrack != null)
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.music_note_rounded,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            _selectedTrack!.title,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -694,8 +729,26 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
                           title: Text(track.genre),
                           trailing: IconButton(
                             icon: const Icon(Icons.play_arrow_rounded),
-                            onPressed: () {
-                              _musicService.playTrack(track);
+                            onPressed: () async {
+                              debugPrint('[SlideshowEditor] Preview button pressed for track: ${track.id}');
+                              // Stop any currently playing preview
+                              await _musicService.stop();
+                              
+                              // Use current _musicVolume for preview (not 0.0 like slideshow fade-in)
+                              final played = await _musicService.playTrack(
+                                track,
+                                initialVolume: _musicVolume,
+                              );
+                              if (!played && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Unable to play ${track.title}. Check assets/music/ files exist.'),
+                                    duration: const Duration(seconds: 3),
+                                  ),
+                                );
+                              } else if (played) {
+                                debugPrint('[SlideshowEditor] Preview started for track: ${track.id}');
+                              }
                             },
                             tooltip: 'Preview',
                           ),

@@ -37,27 +37,5 @@ class MusicLibrary {
       attributionText: '"Atlantean Twilight" by Kevin MacLeod (CC BY 3.0) – https://incompetech.com',
       sourceUrl: 'https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100326',
     ),
-    MusicTrack(
-      id: 'cinematic_rains_will_fall',
-      title: 'Rains Will Fall',
-      artist: 'Kevin MacLeod',
-      genre: 'Cinematic',
-      assetPath: 'assets/music/cinematic_rains_will_fall.mp3',
-      licenseName: 'CC BY 3.0',
-      licenseUrl: 'https://creativecommons.org/licenses/by/3.0/',
-      attributionText: '"Rains Will Fall" by Kevin MacLeod (CC BY 3.0) – https://incompetech.com',
-      sourceUrl: 'https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100409',
-    ),
-    MusicTrack(
-      id: 'acoustic_porch_swing_days',
-      title: 'Porch Swing Days (slower)',
-      artist: 'Kevin MacLeod',
-      genre: 'Acoustic/Folk',
-      assetPath: 'assets/music/acoustic_porch_swing_days.mp3',
-      licenseName: 'CC BY 3.0',
-      licenseUrl: 'https://creativecommons.org/licenses/by/3.0/',
-      attributionText: '"Porch Swing Days (slower)" by Kevin MacLeod (CC BY 3.0) – https://incompetech.com',
-      sourceUrl: 'https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100619',
-    ),
   ];
 }
