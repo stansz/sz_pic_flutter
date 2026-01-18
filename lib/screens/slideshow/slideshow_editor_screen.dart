@@ -19,6 +19,30 @@ import '../../core/services/music_service.dart';
 import '../../core/services/slideshow_engine.dart';
 import '../../core/utils/export_helper.dart';
 import '../../core/widgets/image_item_widget.dart';
+import '../../core/widgets/loading_dialog.dart';
+
+// Platform-specific hardware encoder selection
+// Note: Hardware encoders (h264_videotoolbox, h264_vaapi) require specific FFmpeg Kit
+// configurations and may not be available on all devices. Defaulting to libx264
+// (software encoding) which is always available and reliable.
+String _getHardwareEncoder() {
+  if (Platform.isIOS || Platform.isMacOS) {
+    return 'libx264'; // Use software encoding for maximum compatibility
+  } else if (Platform.isAndroid) {
+    return 'libx264'; // VAAPI requires specific setup; use software encoding
+  } else {
+    return 'libx264';
+  }
+}
+
+// Check if hardware acceleration is likely available
+bool _isHardwareAccelerationLikely() {
+  if (Platform.isIOS || Platform.isMacOS) {
+    return true; // VideoToolbox is always available on Apple devices
+  }
+  // On Android, hardware encoding availability varies
+  return true;
+}
 
 enum SlideshowExportFormat { pngSequence, video, projectFile }
 
@@ -39,11 +63,18 @@ extension on SlideshowExportFormat {
       case SlideshowExportFormat.pngSequence:
         return 'Individual slide images';
       case SlideshowExportFormat.video:
-        return 'Compiled MP4 with transitions';
+        return 'Compiled MP4 with transitions (15fps)';
       case SlideshowExportFormat.projectFile:
         return 'Save project for later editing';
     }
   }
+}
+
+class _FrameCaptureResult {
+  final List<File> files;
+  final List<double> durations;
+  
+  _FrameCaptureResult({required this.files, required this.durations});
 }
 
 class SlideshowEditorScreen extends StatefulWidget {
@@ -547,7 +578,7 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
       },
     );
   }
- 
+  
   void _stopPlayback() {
     _playbackTimer?.cancel();
     _playbackTimer = null;
@@ -877,7 +908,19 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
   Future<Uint8List> _captureCurrentSlide() async {
     final RenderRepaintBoundary boundary =
         _slideshowKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-    final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+    
+    // Diagnostic: log canvas size and capture parameters
+    final canvasSize = boundary.size;
+    final startTime = DateTime.now();
+    
+    // Capture at lower pixel ratio for faster export (diagnostic: try 1.5)
+    const pixelRatio = 1.5; // Diagnostic: reduce from 2.0 to 1.5
+    final ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
+    final captureTimeMs = DateTime.now().difference(startTime).inMilliseconds;
+    
+    debugPrint('[exportVideo] frame capture: canvas=${canvasSize.width}x${canvasSize.height} '
+        'pixelRatio=$pixelRatio captureTime=${captureTimeMs}ms output=${image.width}x${image.height}');
+    
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     return byteData!.buffer.asUint8List();
   }
@@ -900,9 +943,9 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
 
   Future<void> _waitForNextFrame() async {
     // Allow the widget tree to rebuild and the image to paint
-    await Future.delayed(const Duration(milliseconds: 80));
+    await Future.delayed(const Duration(milliseconds: 50)); // Reduced from 80
     await WidgetsBinding.instance.endOfFrame;
-    await Future.delayed(const Duration(milliseconds: 40));
+    await Future.delayed(const Duration(milliseconds: 20)); // Reduced from 40
   }
 
   Future<void> _exportSlideshow(SlideshowExportFormat format) async {
@@ -923,13 +966,18 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
           break;
       }
     } catch (e) {
+      debugPrint('[exportSlideshow] Export error: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Export failed: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        try {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Export failed: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        } catch (snackBarError) {
+          debugPrint('[exportSlideshow] Failed to show error SnackBar: $snackBarError');
+        }
       }
     } finally {
       setState(() {
@@ -1042,61 +1090,123 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
     );
     await exportDir.create(recursive: true);
     final frameFiles = <File>[];
-
-    try {
+    final frameDurations = <double>[];
+try {
+  // Add initial delay to let GPU settle before starting export
+  await Future.delayed(const Duration(milliseconds: 500));
+  
+  // Calculate total number of frames to be captured for progress tracking
+  int totalFrames = 0;
+  const transitionFps = 15; // Reduced from 30 to prevent GPU surface loss
+  const slideFps = 5; // Reduced from 10 to prevent GPU surface loss
+      const transitionDurationMs = 500; // Default transition duration in milliseconds
+      
+      // Calculate total frames
       for (var i = 0; i < _project.slides.length; i++) {
-        _goToSlide(i, animate: false);
         final slide = _project.slides[i];
-        await _ensureSlideImageReady(slide, i);
-        await _waitForNextFrame();
-        final bytes = await _captureCurrentSlide();
-        final frameFile = File(
-          p.join(exportDir.path, 'frame_${i.toString().padLeft(4, '0')}.png'),
+        final transitionDuration = slide.transitionIn?.duration ?? const Duration(milliseconds: transitionDurationMs);
+        
+        // Add transition frames (except first slide)
+        if (i > 0) {
+          final frameIntervalMs = (1000 / transitionFps).round();
+          final transitionFrames = (transitionDuration.inMilliseconds / frameIntervalMs).ceil();
+          totalFrames += transitionFrames;
+        }
+        
+        // Add static slide frames
+        final frameIntervalMs = (1000 / slideFps).round();
+        final staticFrames = (slide.duration.inMilliseconds / frameIntervalMs).ceil();
+        totalFrames += staticFrames;
+      }
+      
+      // Show progress dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => LoadingDialog(
+          message: 'Exporting slideshow',
+          showProgress: true,
+          current: 0,
+          total: totalFrames,
+        ),
+      );
+      
+      int frameIndex = 0;
+      
+      for (var i = 0; i < _project.slides.length; i++) {
+        final slide = _project.slides[i];
+        final transitionDuration = slide.transitionIn?.duration ?? const Duration(milliseconds: transitionDurationMs);
+        
+        // Capture transition frames (except for first slide)
+        if (i > 0) {
+          debugPrint('[exportVideo] capturing transition from slide ${i-1} to $i');
+          final transitionFrames = await _captureTransitionFrames(
+            fromIndex: i - 1,
+            toIndex: i,
+            transitionDuration: transitionDuration,
+            fps: transitionFps,
+            exportDir: exportDir,
+            startFrameIndex: frameIndex,
+            totalFrames: totalFrames,
+          );
+          frameFiles.addAll(transitionFrames.files);
+          frameDurations.addAll(transitionFrames.durations);
+          frameIndex += transitionFrames.files.length;
+        }
+        
+        // Capture static slide frames
+        debugPrint('[exportVideo] capturing static slide $i');
+        final staticFrames = await _captureStaticSlideFrames(
+          slideIndex: i,
+          slideDuration: slide.duration,
+          fps: slideFps,
+          exportDir: exportDir,
+          startFrameIndex: frameIndex,
+          totalFrames: totalFrames,
         );
-        await frameFile.writeAsBytes(bytes);
-        final frameExists = await frameFile.exists();
-        final frameSize = frameExists ? await frameFile.length() : 0;
-        debugPrint(
-          '[exportVideo] captured frame index=$i slideId=${slide.id} durationMs=${slide.duration.inMilliseconds} bytes=${bytes.length} fileExists=$frameExists fileSize=$frameSize path=${frameFile.path}',
-        );
-        frameFiles.add(frameFile);
+        frameFiles.addAll(staticFrames.files);
+        frameDurations.addAll(staticFrames.durations);
+        frameIndex += staticFrames.files.length;
       }
 
       final listFile = File(p.join(exportDir.path, 'frames.txt'));
       final buffer = StringBuffer();
       for (var i = 0; i < frameFiles.length; i++) {
-        final slide = _project.slides[i];
         buffer.writeln("file '${_escapePathForConcat(frameFiles[i].path)}'");
-        final durationSeconds = slide.duration.inMilliseconds / 1000.0;
-        buffer.writeln('duration ${durationSeconds.toStringAsFixed(3)}');
+        buffer.writeln('duration ${frameDurations[i].toStringAsFixed(6)}');
       }
       final listContents = buffer.toString();
       await listFile.writeAsString(listContents);
       debugPrint('[exportVideo] frames manifest path=${listFile.path}\n$listContents');
+      debugPrint('[exportVideo] total frames captured: ${frameFiles.length}');
 
       final audioPath = await _materializeSelectedAudioFile();
 
       final outputPath = p.join(selectedDirectory, 'slideshow_$timestamp.mp4');
       
-      // Match input aspect ratio - only ensure even dimensions
+      // Start timing for FFmpeg encoding phase
+      final ffmpegStartTime = DateTime.now();
+      
+      // Use software encoding (libx264) for maximum compatibility
       final ffmpegCommandParts = <String>[
         '-y',
         '-f concat',
         '-safe 0',
         '-i "${listFile.path}"',
         if (audioPath != null) '-i "$audioPath"',
-        '-fps_mode vfr',
+        '-r 15',
         '-vf "scale=trunc(iw/2)*2:trunc(ih/2)*2"',
         '-pix_fmt yuv420p',
-        '-c:v libx264',
-        '-preset veryfast',
+        '-c:v ${_getHardwareEncoder()}',  // Use platform-appropriate hardware encoder
+        '-preset ultrafast',  // Faster encoding than veryfast
         '-crf 20',
         if (audioPath != null) ...['-c:a aac', '-b:a 192k', '-shortest'],
         '-movflags +faststart',
         '"$outputPath"',
       ];
       final ffmpegCommand = ffmpegCommandParts.join(' ');
-      debugPrint('[exportVideo] running ffmpeg: $ffmpegCommand');
+      debugPrint('[exportVideo] FFmpeg command: $ffmpegCommand');
+      debugPrint('[exportVideo] Hardware encoder: ${_getHardwareEncoder()}');
 
       final session = await FFmpegKit.execute(ffmpegCommand);
 
@@ -1104,33 +1214,38 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
       final sessionState = await session.getState();
       final sessionDurationMs = await session.getDuration();
       final ffmpegLogs = await session.getAllLogsAsString(5000);
-      debugPrint('FFmpeg exit=${returnCode?.getValue()} state=$sessionState duration=${sessionDurationMs}ms');
+      final ffmpegEncodingTimeMs = DateTime.now().difference(ffmpegStartTime).inMilliseconds;
+      debugPrint('FFmpeg exit=${returnCode?.getValue()} state=$sessionState duration=${sessionDurationMs}ms encodingTime=${ffmpegEncodingTimeMs}ms');
 
-      if (!ReturnCode.isSuccess(returnCode)) {
+      if (ReturnCode.isSuccess(returnCode)) {
+        debugPrint('FFmpeg command succeeded: $ffmpegCommand');
+        if (ffmpegLogs != null) {
+          debugPrint('FFmpeg logs:\n$ffmpegLogs');
+        }
+
+        if (mounted) {
+          try {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Video exported to: $outputPath'),
+                duration: const Duration(seconds: 6),
+                action: SnackBarAction(
+                  label: 'OK',
+                  onPressed: () {},
+                ),
+              ),
+            );
+          } catch (e) {
+            debugPrint('[exportVideo] Failed to show success SnackBar: $e');
+          }
+        }
+      } else {
         final failStack = await session.getFailStackTrace();
         final stderrOutput = await session.getOutput();
         debugPrint('FFmpeg command failed: $ffmpegCommand');
         debugPrint('FFmpeg logs:\n${ffmpegLogs ?? stderrOutput ?? 'no logs'}');
         throw Exception(
           'FFmpeg failed (code ${returnCode?.getValue()}): ${failStack ?? stderrOutput ?? 'see logs'}',
-        );
-      } else {
-        debugPrint('FFmpeg command succeeded: $ffmpegCommand');
-        if (ffmpegLogs != null) {
-          debugPrint('FFmpeg logs:\n$ffmpegLogs');
-        }
-      }
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Video exported to: $outputPath'),
-            duration: const Duration(seconds: 6),
-            action: SnackBarAction(
-              label: 'OK',
-              onPressed: () {},
-            ),
-          ),
         );
       }
 
@@ -1144,13 +1259,134 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
         debugPrint('[exportVideo] failed to clean up temporary folder: $e');
       }
     } finally {
+      // Close progress dialog
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+      
+      // Restore original state
       if (mounted && _project.slides.isNotEmpty) {
         _goToSlide(originalIndex, animate: false);
+        _previousSlideIndex = null;
+        _transitionController.value = 1.0;
       } else if (_project.slides.isNotEmpty) {
         _currentSlideIndex = originalIndex.clamp(0, _project.slides.length - 1);
         _remainingTime = _project.slides[_currentSlideIndex].duration;
+        _previousSlideIndex = null;
+        _transitionController.value = 1.0;
       }
     }
+  }
+
+  Future<_FrameCaptureResult> _captureTransitionFrames({
+    required int fromIndex,
+    required int toIndex,
+    required Duration transitionDuration,
+    required int fps,
+    required Directory exportDir,
+    required int startFrameIndex,
+    required int totalFrames,
+  }) async {
+    final files = <File>[];
+    final durations = <double>[];
+    final frameIntervalMs = (1000 / fps).round();
+    final transitionFrames = (transitionDuration.inMilliseconds / frameIntervalMs).ceil();
+    
+    debugPrint('[exportVideo] transition: from=$fromIndex to=$toIndex durationMs=${transitionDuration.inMilliseconds} fps=$fps frames=$transitionFrames');
+    
+    // Start the transition animation
+    _goToSlide(fromIndex, animate: false);
+    await _waitForNextFrame();
+    
+    // Set up for transition
+    setState(() {
+      _previousSlideIndex = fromIndex;
+      _currentSlideIndex = toIndex;
+    });
+    
+    // Run transition animation and capture frames
+    final transitionDurationMs = transitionDuration.inMilliseconds;
+    for (var i = 0; i < transitionFrames; i++) {
+      final progress = (i / transitionFrames).clamp(0.0, 1.0);
+      _transitionController.value = progress;
+      
+      // Wait for the widget to rebuild with the new animation value
+      await Future.delayed(const Duration(milliseconds: 30)); // Reduced from 150ms total
+      await WidgetsBinding.instance.endOfFrame;
+      
+      // Capture the frame
+      final bytes = await _captureCurrentSlide();
+      final frameFile = File(
+        p.join(exportDir.path, 'frame_${(startFrameIndex + i).toString().padLeft(4, '0')}.png'),
+      );
+      
+      // Write file asynchronously in parallel (non-blocking)
+      _writeFrameFile(frameFile, bytes);
+      
+      files.add(frameFile);
+      durations.add(1.0 / fps);
+      
+      // Update progress dialog less frequently
+      if (mounted && (i % 3 == 0 || i == transitionFrames - 1)) {
+        _updateExportProgress(startFrameIndex + i + 1, totalFrames);
+      }
+      
+      debugPrint('[exportVideo] transition frame ${startFrameIndex + i}/$transitionFrames progress=$progress bytes=${bytes.length}');
+    }
+    
+    // Reset transition controller
+    _transitionController.value = 1.0;
+    setState(() {
+      _previousSlideIndex = null;
+    });
+    
+    // Brief delay after transition
+    await Future.delayed(const Duration(milliseconds: 30)); // Reduced from 100
+    
+    return _FrameCaptureResult(files: files, durations: durations);
+  }
+
+  Future<_FrameCaptureResult> _captureStaticSlideFrames({
+    required int slideIndex,
+    required Duration slideDuration,
+    required int fps,
+    required Directory exportDir,
+    required int startFrameIndex,
+    required int totalFrames,
+  }) async {
+    final files = <File>[];
+    final durations = <double>[];
+    
+    debugPrint('[exportVideo] static slide: index=$slideIndex durationMs=${slideDuration.inMilliseconds} fps=$fps');
+    
+    // Go to the slide without animation
+    _goToSlide(slideIndex, animate: false);
+    final slide = _project.slides[slideIndex];
+    await _ensureSlideImageReady(slide, slideIndex);
+    await _waitForNextFrame();
+    
+    // OPTIMIZATION: For static slides, we only need ONE frame at the start
+    // The entire slide duration is represented by this single frame in the concat demuxer
+    final bytes = await _captureCurrentSlide();
+    final frameFile = File(
+      p.join(exportDir.path, 'frame_${startFrameIndex.toString().padLeft(4, '0')}.png'),
+    );
+    
+    // Write file asynchronously in parallel (non-blocking)
+    _writeFrameFile(frameFile, bytes);
+    
+    files.add(frameFile);
+    // Duration is the full slide duration for this single frame
+    durations.add(slideDuration.inMilliseconds / 1000.0);
+    
+    debugPrint('[exportVideo] static frame captured bytes=${bytes.length} duration=${slideDuration.inSeconds}s');
+    
+    // Update progress
+    if (mounted) {
+      _updateExportProgress(startFrameIndex + 1, totalFrames);
+    }
+    
+    return _FrameCaptureResult(files: files, durations: durations);
   }
 
   Future<void> _exportProjectFile() async {
@@ -1251,8 +1487,32 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
       return null;
     }
   }
- 
-   void _showExportOptions() {
+
+  // Helper for parallel file writing - non-blocking
+  void _writeFrameFile(File file, Uint8List bytes) {
+    file.writeAsBytes(bytes).catchError((e) {
+      debugPrint('[exportVideo] failed to write frame file: $e');
+      return null;
+    });
+  }
+
+  // Helper for updating progress dialog (avoids dialog recreation spam)
+  void _updateExportProgress(int current, int total) {
+    if (!mounted) return;
+    Navigator.of(context).pop(); // Close current dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => LoadingDialog(
+        message: 'Exporting slideshow',
+        showProgress: true,
+        current: current,
+        total: total,
+      ),
+    );
+  }
+  
+  void _showExportOptions() {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
