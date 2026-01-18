@@ -4,6 +4,7 @@ import '../core/services/image_picker_service.dart';
 import '../core/widgets/loading_dialog.dart';
 import 'collage/collage_creator_screen.dart';
 import 'slideshow/slideshow_creator_screen.dart';
+import 'photo_editor/photo_editor_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -96,6 +97,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           subtitle: 'Make animated photo presentations',
                           color: theme.colorScheme.secondary,
                           onTap: _isLoading ? null : () => _navigateToSlideshowCreator(context),
+                          isLoading: _isLoading,
+                        ),
+                        _MenuCard(
+                          icon: Icons.edit,
+                          title: 'Edit Photo',
+                          subtitle: 'Apply film grain and effects',
+                          color: theme.colorScheme.tertiary,
+                          onTap: _isLoading ? null : () => _navigateToPhotoEditor(context),
                           isLoading: _isLoading,
                         ),
                         const SizedBox(height: 16), // Add some bottom spacing for scroll
@@ -262,6 +271,80 @@ class _HomeScreenState extends State<HomeScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error loading images: ${e.toString()}'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _navigateToPhotoEditor(BuildContext context) async {
+    if (!mounted) return;
+    
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Show loading dialog
+    LoadingDialog.show(
+      context,
+      message: 'Loading image...',
+      showProgress: false,
+    );
+
+    try {
+      final imagePickerService = context.read<ImagePickerService>();
+      
+      // Pick single image
+      final image = await imagePickerService.pickImage();
+      
+      // Hide loading dialog
+      if (mounted) {
+        LoadingDialog.hide(context);
+      }
+      
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      
+      if (image == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No image selected'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => PhotoEditorScreen(image: image!),
+          ),
+        );
+      }
+    } catch (e) {
+      // Hide loading dialog on error
+      if (mounted) {
+        LoadingDialog.hide(context);
+      }
+      
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading image: ${e.toString()}'),
             backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 3),
           ),
