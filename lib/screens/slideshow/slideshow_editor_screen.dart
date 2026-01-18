@@ -39,11 +39,18 @@ extension on SlideshowExportFormat {
       case SlideshowExportFormat.pngSequence:
         return 'Individual slide images';
       case SlideshowExportFormat.video:
-        return 'Compiled MP4 with transitions';
+        return 'Compiled MP4 with transitions (15fps)';
       case SlideshowExportFormat.projectFile:
         return 'Save project for later editing';
     }
   }
+}
+
+class _FrameCaptureResult {
+  final List<File> files;
+  final List<double> durations;
+  
+  _FrameCaptureResult({required this.files, required this.durations});
 }
 
 class SlideshowEditorScreen extends StatefulWidget {
@@ -1042,50 +1049,75 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
     );
     await exportDir.create(recursive: true);
     final frameFiles = <File>[];
+    final frameDurations = <double>[];
 
     try {
+      // Add initial delay to let GPU settle before starting export
+      await Future.delayed(const Duration(milliseconds: 500));
+      // Export settings - reduced frame rates to prevent GPU overload
+      const transitionFps = 15; // Reduced from 30 to prevent GPU surface loss
+      const slideFps = 5; // Reduced from 10 to prevent GPU surface loss
+      const transitionDurationMs = 500; // Default transition duration in milliseconds
+      
+      int frameIndex = 0;
+      
       for (var i = 0; i < _project.slides.length; i++) {
-        _goToSlide(i, animate: false);
         final slide = _project.slides[i];
-        await _ensureSlideImageReady(slide, i);
-        await _waitForNextFrame();
-        final bytes = await _captureCurrentSlide();
-        final frameFile = File(
-          p.join(exportDir.path, 'frame_${i.toString().padLeft(4, '0')}.png'),
+        final transitionDuration = slide.transitionIn?.duration ?? const Duration(milliseconds: transitionDurationMs);
+        
+        // Capture transition frames (except for first slide)
+        if (i > 0) {
+          debugPrint('[exportVideo] capturing transition from slide ${i-1} to $i');
+          final transitionFrames = await _captureTransitionFrames(
+            fromIndex: i - 1,
+            toIndex: i,
+            transitionDuration: transitionDuration,
+            fps: transitionFps,
+            exportDir: exportDir,
+            startFrameIndex: frameIndex,
+          );
+          frameFiles.addAll(transitionFrames.files);
+          frameDurations.addAll(transitionFrames.durations);
+          frameIndex += transitionFrames.files.length;
+        }
+        
+        // Capture static slide frames
+        debugPrint('[exportVideo] capturing static slide $i');
+        final staticFrames = await _captureStaticSlideFrames(
+          slideIndex: i,
+          slideDuration: slide.duration,
+          fps: slideFps,
+          exportDir: exportDir,
+          startFrameIndex: frameIndex,
         );
-        await frameFile.writeAsBytes(bytes);
-        final frameExists = await frameFile.exists();
-        final frameSize = frameExists ? await frameFile.length() : 0;
-        debugPrint(
-          '[exportVideo] captured frame index=$i slideId=${slide.id} durationMs=${slide.duration.inMilliseconds} bytes=${bytes.length} fileExists=$frameExists fileSize=$frameSize path=${frameFile.path}',
-        );
-        frameFiles.add(frameFile);
+        frameFiles.addAll(staticFrames.files);
+        frameDurations.addAll(staticFrames.durations);
+        frameIndex += staticFrames.files.length;
       }
 
       final listFile = File(p.join(exportDir.path, 'frames.txt'));
       final buffer = StringBuffer();
       for (var i = 0; i < frameFiles.length; i++) {
-        final slide = _project.slides[i];
         buffer.writeln("file '${_escapePathForConcat(frameFiles[i].path)}'");
-        final durationSeconds = slide.duration.inMilliseconds / 1000.0;
-        buffer.writeln('duration ${durationSeconds.toStringAsFixed(3)}');
+        buffer.writeln('duration ${frameDurations[i].toStringAsFixed(6)}');
       }
       final listContents = buffer.toString();
       await listFile.writeAsString(listContents);
       debugPrint('[exportVideo] frames manifest path=${listFile.path}\n$listContents');
+      debugPrint('[exportVideo] total frames captured: ${frameFiles.length}');
 
       final audioPath = await _materializeSelectedAudioFile();
 
       final outputPath = p.join(selectedDirectory, 'slideshow_$timestamp.mp4');
       
-      // Match input aspect ratio - only ensure even dimensions
+      // Use 15fps output to match captured frame rate and prevent GPU issues
       final ffmpegCommandParts = <String>[
         '-y',
         '-f concat',
         '-safe 0',
         '-i "${listFile.path}"',
         if (audioPath != null) '-i "$audioPath"',
-        '-fps_mode vfr',
+        '-r 15',
         '-vf "scale=trunc(iw/2)*2:trunc(ih/2)*2"',
         '-pix_fmt yuv420p',
         '-c:v libx264',
@@ -1144,13 +1176,127 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
         debugPrint('[exportVideo] failed to clean up temporary folder: $e');
       }
     } finally {
+      // Restore original state
       if (mounted && _project.slides.isNotEmpty) {
         _goToSlide(originalIndex, animate: false);
+        _previousSlideIndex = null;
+        _transitionController.value = 1.0;
       } else if (_project.slides.isNotEmpty) {
         _currentSlideIndex = originalIndex.clamp(0, _project.slides.length - 1);
         _remainingTime = _project.slides[_currentSlideIndex].duration;
+        _previousSlideIndex = null;
+        _transitionController.value = 1.0;
       }
     }
+  }
+
+  Future<_FrameCaptureResult> _captureTransitionFrames({
+    required int fromIndex,
+    required int toIndex,
+    required Duration transitionDuration,
+    required int fps,
+    required Directory exportDir,
+    required int startFrameIndex,
+  }) async {
+    final files = <File>[];
+    final durations = <double>[];
+    final frameIntervalMs = (1000 / fps).round();
+    final totalFrames = (transitionDuration.inMilliseconds / frameIntervalMs).ceil();
+    
+    debugPrint('[exportVideo] transition: from=$fromIndex to=$toIndex durationMs=${transitionDuration.inMilliseconds} fps=$fps frames=$totalFrames');
+    
+    // Start the transition animation
+    _goToSlide(fromIndex, animate: false);
+    await _waitForNextFrame();
+    
+    // Set up for transition
+    setState(() {
+      _previousSlideIndex = fromIndex;
+      _currentSlideIndex = toIndex;
+    });
+    
+    // Run transition animation and capture frames
+    final transitionDurationMs = transitionDuration.inMilliseconds;
+    for (var i = 0; i < totalFrames; i++) {
+      final progress = (i / totalFrames).clamp(0.0, 1.0);
+      _transitionController.value = progress;
+      
+      // Wait for the widget to rebuild with the new animation value
+      // Longer delay to prevent GPU surface loss
+      await Future.delayed(const Duration(milliseconds: 100));
+      await WidgetsBinding.instance.endOfFrame;
+      // Additional delay to give GPU time to recover
+      await Future.delayed(const Duration(milliseconds: 50));
+      
+      // Capture the frame
+      final bytes = await _captureCurrentSlide();
+      final frameFile = File(
+        p.join(exportDir.path, 'frame_${(startFrameIndex + i).toString().padLeft(4, '0')}.png'),
+      );
+      await frameFile.writeAsBytes(bytes);
+      
+      files.add(frameFile);
+      durations.add(1.0 / fps);
+      
+      debugPrint('[exportVideo] transition frame ${startFrameIndex + i}/$totalFrames progress=$progress bytes=${bytes.length}');
+    }
+    
+    // Reset transition controller
+    _transitionController.value = 1.0;
+    setState(() {
+      _previousSlideIndex = null;
+    });
+    
+    // Add delay after transition to give GPU time to recover
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    return _FrameCaptureResult(files: files, durations: durations);
+  }
+
+  Future<_FrameCaptureResult> _captureStaticSlideFrames({
+    required int slideIndex,
+    required Duration slideDuration,
+    required int fps,
+    required Directory exportDir,
+    required int startFrameIndex,
+  }) async {
+    final files = <File>[];
+    final durations = <double>[];
+    final frameIntervalMs = (1000 / fps).round();
+    final totalFrames = (slideDuration.inMilliseconds / frameIntervalMs).ceil();
+    
+    debugPrint('[exportVideo] static slide: index=$slideIndex durationMs=${slideDuration.inMilliseconds} fps=$fps frames=$totalFrames');
+    
+    // Go to the slide without animation
+    _goToSlide(slideIndex, animate: false);
+    final slide = _project.slides[slideIndex];
+    await _ensureSlideImageReady(slide, slideIndex);
+    await _waitForNextFrame();
+    
+    // Capture frames for the static slide duration
+    for (var i = 0; i < totalFrames; i++) {
+      // Capture the frame
+      final bytes = await _captureCurrentSlide();
+      final frameFile = File(
+        p.join(exportDir.path, 'frame_${(startFrameIndex + i).toString().padLeft(4, '0')}.png'),
+      );
+      await frameFile.writeAsBytes(bytes);
+      
+      files.add(frameFile);
+      durations.add(1.0 / fps);
+      
+      debugPrint('[exportVideo] static frame ${startFrameIndex + i}/$totalFrames bytes=${bytes.length}');
+      
+      // Add delay between frames to prevent GPU surface loss
+      if (i < totalFrames - 1) {
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+    }
+    
+    // Add delay after static slide to give GPU time to recover
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    return _FrameCaptureResult(files: files, durations: durations);
   }
 
   Future<void> _exportProjectFile() async {
