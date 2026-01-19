@@ -5,11 +5,12 @@
 ![Flutter](https://img.shields.io/badge/Flutter-3.10.4+-02569B?logo=flutter)
 ![Dart](https://img.shields.io/badge/Dart-3.10.4+-0175C2?logo=dart)
 ![Android](https://img.shields.io/badge/Android-API%2021+-3DDC84?logo=android)
+![License](https://img.shields.io/badge/License-GPL%20v3-blue.svg)
 ![Status](https://img.shields.io/badge/Status-Alpha-yellow)
 
 **Transform your photos into stunning collages and slideshows with AI-powered creative assistance**
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Screenshots](#-screenshots) • [Contributing](#-contributing)
+[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Screenshots](#-screenshots) • [License](#-license) • [Contributing](#-contributing)
 
 </div>
 
@@ -58,6 +59,14 @@ SZ Picture Create is a cross-platform mobile application that combines powerful 
 
 See [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for detailed progress.
 
+
+## 📄 License
+
+This project is licensed under the **GNU General Public License v3.0**.
+
+The project uses FFmpeg Kit with GPL libraries, which requires the entire application to be licensed under GPL v3.
+
+See the [LICENSE](LICENSE) file for the full license text.
 
 ## 🙏 Acknowledgments
 
