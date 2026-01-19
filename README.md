@@ -68,9 +68,9 @@ The project uses FFmpeg Kit with GPL libraries, which requires the entire applic
 
 See the [LICENSE](LICENSE) file for the full license text.
 
-## 🙏 Acknowledgments
+## 🙏 Acknowledgments & AI/Vibe Coding Warning
 
-- Vibed coded with help of Kilo Code in Android Studio on Macbook M4 with special thanks to my pug, Sparky
+- Vibed coded with help of help of Kilo Code in Android Studio
 
 ## 📞 Support
 
