@@ -20,6 +20,14 @@ SZ Picture Create is a cross-platform mobile application that combines powerful 
 
 ## ✨ Features
 
+### Photo Editor
+- ✅ **GPU-Accelerated Filters**: Real-time 60fps preview using Flutter's ColorFiltered widget
+- ✅ **8 Filter Presets**: Original, Vintage, Black & White, Cool, Warm, Vibrant, Muted, Dramatic
+- ✅ **Instagram-Style Selector**: Horizontal filter picker with visual thumbnails
+- ✅ **Instant Switching**: Zero lag between filters with GPU rendering
+- ✅ **Export Options**: PNG and JPEG with filter applied
+- ✅ **High-Quality Capture**: 3x pixel ratio for print-quality exports
+
 ### Collage Creator
 - ✅ **4 Layout Algorithms**
   - Grid: Evenly distributed cells
@@ -27,11 +35,28 @@ SZ Picture Create is a cross-platform mobile application that combines powerful 
   - Template: Pre-designed 2-5 image layouts
   - Freestyle: Interactive editor with drag, resize, and rotate
 - ✅ **Image Selection**: Multiple images from gallery or camera
-- ✅ **Export Options**: PNG and JPEG (high quality)
+- ✅ **Background Color Picker**: 20 preset colors + custom HSV sliders
+- ✅ **Aspect Ratio Selector**: 1:1, 4:3, 3:2, 16:9, 3:4, 9:16
+- ✅ **Spacing Adjustment**: 0-50% with "Closer/Further" labels
+- ✅ **Free Crop Mode**: Precise image positioning within cells (freestyle editor)
+- ✅ **Export Options**: PNG and JPEG with user-selected save location
 - ✅ **Freestyle Editor**: Full interactive editing with drag, resize, rotate, and layer management
-- ✅ **Customization**: Background colors, spacing, aspect ratios (for other layouts)
-- ⏳  **AI Suggestions**: Get layout recommendations based on image count
-  
+- ⏳ **AI Suggestions**: Get layout recommendations based on image count
+
+### Slideshow Creator
+- ✅ **Timeline-Based Editor**: Visual slide preview with playback controls
+- ✅ **Transition Effects**: Fade, Slide, Zoom, Ken Burns
+- ✅ **Background Music**: 3 bundled royalty-free tracks (Kevin MacLeod, CC BY 3.0)
+  - "Carefree" (Upbeat)
+  - "Dream Culture" (Nostalgic)
+  - "Atlantean Twilight" (Ambient/Chill)
+- ✅ **Volume Control**: Slider for audio adjustment
+- ✅ **Music Preview**: Preview tracks before selection
+- ✅ **Video Export**: MP4 with audio support, optimized frame rates (15fps transitions, 5fps static)
+- ✅ **PNG Sequence Export**: Individual slide images
+- ✅ **Project File Export**: JSON for saving/loading projects
+- ✅ **Automatic Fade-In/Out**: Smooth audio transitions synchronized with slideshow
+
 ### AI Integration
 - ⏳ **Dual Provider Support**
   - Ollama: Local, privacy-first AI processing
@@ -40,20 +65,17 @@ SZ Picture Create is a cross-platform mobile application that combines powerful 
 - ⏳ **Color Scheme Analysis**: Complementary color suggestions
 - ⏳ **Image Enhancement**: Filter and improvement suggestions
 
-### Slideshow Creator
-- ✅ Timeline-based editor
-- ✅ Transition effects (Fade, Slide, Zoom, Dissolve, Ken Burns)
-- ✅ Video export (MP4)
-- ✅ Music integration
-
+> **Note**: AI features are currently in development and not yet available for use.
 
 ## 🗺️ Roadmap
 
+- ✅ Web deployment (partially implemented - basic functionality)
 - ⏳ Cloud storage
 - ⏳ Social sharing
 - ⏳ iOS support
-- ⏳ Web deployment
-- ⏳ AI features
+- ⏳ AI features testing
+- ⏳ Project persistence (SQLite)
+- ⏳ Project gallery screen
 
 See [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for detailed progress.
 
