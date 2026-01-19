@@ -1,0 +1,93 @@
+NOTICE file for SZ Picture Create
+
+This file provides attribution and license information for third-party components
+used in the SZ Picture Create project.
+
+================================================================================
+FLUTTER SDK AND DEPENDENCIES
+================================================================================
+
+| Component                  | Version      | License        | Source/Attribution                        |
+|----------------------------|--------------|----------------|-------------------------------------------|
+| Flutter SDK                | 3.10.4+      | BSD 3-Clause   | https://flutter.dev                       |
+| provider                   | 6.1.1        | MIT            | https://pub.dev/packages/provider         |
+| image_picker               | 1.0.7        | MIT            | https://pub.dev/packages/image_picker     |
+| image                      | 4.1.7        | MIT            | https://pub.dev/packages/image            |
+| photo_view                 | 0.15.0       | MIT            | https://pub.dev/packages/photo_view      |
+| dio                        | 5.4.0        | MIT            | https://pub.dev/packages/dio              |
+| http                       | 1.2.0        | BSD 3-Clause   | https://pub.dev/packages/http             |
+| shared_preferences         | 2.2.2        | BSD 3-Clause   | https://pub.dev/packages/shared_preferences |
+| path_provider              | 2.1.2        | BSD 3-Clause   | https://pub.dev/packages/path_provider    |
+| sqflite                    | 2.3.2        | BSD 3-Clause   | https://pub.dev/packages/sqflite          |
+| file_picker                | 10.3.8       | MIT            | https://pub.dev/packages/file_picker      |
+| permission_handler         | 12.0.1       | MIT            | https://pub.dev/packages/permission_handler |
+| flutter_staggered_grid_view| 0.7.0        | MIT            | https://pub.dev/packages/flutter_staggered_grid_view |
+| cached_network_image       | 3.3.1        | MIT            | https://pub.dev/packages/cached_network_image |
+| shimmer                    | 3.0.0        | MIT            | https://pub.dev/packages/shimmer          |
+| just_audio                 | 0.9.37       | MIT            | https://pub.dev/packages/just_audio       |
+| audio_session              | 0.1.16       | MIT            | https://pub.dev/packages/audio_session    |
+| video_player               | 2.8.2        | BSD 3-Clause   | https://pub.dev/packages/video_player     |
+| ffmpeg_kit_flutter_new     | 4.1.0        | GPL v3         | https://pub.dev/packages/ffmpeg_kit_flutter_new |
+| uuid                       | 4.3.3        | MIT            | https://pub.dev/packages/uuid             |
+| intl                       | 0.20.2       | BSD 3-Clause   | https://pub.dev/packages/intl             |
+| equatable                  | 2.0.5        | MIT            | https://pub.dev/packages/equatable        |
+
+================================================================================
+CRITICAL DEPENDENCY NOTICE
+================================================================================
+
+FFmpeg Kit (GPL v3)
+-------------------
+This project uses ffmpeg_kit_flutter_new, which includes FFmpeg libraries
+licensed under GPL v3. Due to this dependency, the entire SZ Picture Create
+application is licensed under GNU General Public License v3.0.
+
+FFmpeg Kit: https://github.com/arthenica/ffmpeg-kit
+License: GNU General Public License v3.0
+Source: https://github.com/arthenica/ffmpeg-kit
+
+================================================================================
+BUNDLED MUSIC ASSETS
+================================================================================
+
+All bundled music tracks are by Kevin MacLeod (incompetech.com) and are
+licensed under Creative Commons Attribution 3.0 Unported (CC BY 3.0).
+
+| Track Name                          | License   | Source/Attribution                          |
+|-------------------------------------|-----------|---------------------------------------------|
+| "Carefree"                          | CC BY 3.0 | Kevin MacLeod (incompetech.com)             |
+| "Dream Culture"                     | CC BY 3.0 | Kevin MacLeod (incompetech.com)             |
+| "Atlantean Twilight"                | CC BY 3.0 | Kevin MacLeod (incompetech.com)             |
+| "Rains Will Fall"                   | CC BY 3.0 | Kevin MacLeod (incompetech.com)             |
+| "Porch Swing Days (slower)"         | CC BY 3.0 | Kevin MacLeod (incompetech.com)             |
+
+Creative Commons BY 3.0 License Summary:
+- You are free to share and adapt the material for any purpose
+- Attribution: You must give appropriate credit to Kevin MacLeod
+- No additional restrictions: You may not apply legal terms or technological
+  measures that legally restrict others from doing anything the license
+  permits
+
+Full license text: https://creativecommons.org/licenses/by/3.0/
+
+================================================================================
+LICENSE COMPATIBILITY
+================================================================================
+
+The CC BY 3.0 license used for the bundled music tracks is compatible with
+the GPL v3 license used for the application. The music tracks remain under
+their original CC BY 3.0 license and attribution is maintained in the
+application and in this NOTICE file.
+
+================================================================================
+FULL LICENSE TEXTS
+================================================================================
+
+For complete license texts, please refer to:
+
+- GPL v3 License: See LICENSE file in the project root
+- BSD 3-Clause License: https://opensource.org/licenses/BSD-3-Clause
+- MIT License: https://opensource.org/licenses/MIT
+- CC BY 3.0 License: https://creativecommons.org/licenses/by/3.0/
+
+================================================================================
