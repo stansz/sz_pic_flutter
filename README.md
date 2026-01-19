@@ -10,15 +10,13 @@
 
 **Transform your photos into stunning collages and slideshows with AI-powered creative assistance**
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Screenshots](#-screenshots) • [License](#-license) • [Contributing](#-contributing)
-
 </div>
 
 ---
 
 ## 🎨 Overview
 
-SZ Picture Create is a cross-platform mobile application that combines powerful collage and slideshow creation tools with AI-driven creative recommendations. Built with Flutter for seamless performance across Android, iOS, and web platforms.
+SZ Picture Create is a cross-platform mobile application that combines powerful editing, collage and slideshow creation tools with AI-driven creative recommendations. Built with Flutter for seamless multi platform performance.
 
 ## ✨ Features
 
