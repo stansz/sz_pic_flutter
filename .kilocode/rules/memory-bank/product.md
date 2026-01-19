@@ -39,7 +39,7 @@ Select Photos → AI/Manual Layout → Customize → Export/Share
 
 ### Feature Set
 
-#### Phase 1: Collage Creator (Current)
+#### Phase 1: Collage Creator (Completed ✅)
 1. **Image Selection**: Pick multiple photos from gallery or camera
 2. **Layout Generation**: 4 instant layouts using different algorithms
    - Grid: Clean, organized, equal-sized cells
@@ -48,28 +48,29 @@ Select Photos → AI/Manual Layout → Customize → Export/Share
    - Freestyle: Artistic, overlapping, rotated cells
 3. **AI Suggestions**: Request additional layouts from AI providers
 4. **Visual Editor**: Preview and customize layouts
-5. **Export**: Save as high-quality PNG
+5. **Export**: Save as high-quality PNG or JPEG
 
-#### Phase 2: Enhanced Editor (Next)
-- Background color picker
-- Aspect ratio selector (1:1, 4:3, 16:9, custom)
-- Spacing and padding controls
-- Individual cell editing (drag, resize, rotate)
-- Filter and effect application
-- Text overlay support
+#### Phase 2: Enhanced Editor (Completed ✅)
+- ✅ Background color picker
+- ✅ Aspect ratio selector (1:1, 4:3, 16:9, 3:4, 9:16)
+- ✅ Spacing and padding controls
+- ✅ Individual cell editing (freestyle editor has drag/resize/rotate)
+- ✅ Free crop mode for precise image positioning
 
-#### Phase 3: Slideshow Creator (Planned)
-- Timeline-based editor
-- Transition effects (fade, slide, zoom, Ken Burns)
-- Background music support
-- Duration per slide control
-- Video export (MP4, MOV, GIF)
+#### Phase 3: Slideshow Creator (Completed ✅)
+- ✅ Timeline-based editor with slide preview
+- ✅ Transition effects (fade, slide, zoom, Ken Burns)
+- ✅ Background music support with 3 bundled royalty-free tracks
+- ✅ Duration per slide control
+- ✅ Video export (MP4) with audio support
+- ✅ PNG sequence export
+- ✅ Project file export (JSON) for saving/loading
 
-#### Phase 4: Project Management (Planned)
+#### Phase 4: Project Management (In Progress)
 - Save and load projects
-- Project gallery with thumbnails
-- Quick edit existing projects
-- Template library
+- Project gallery with thumbnails (planned)
+- Quick edit existing projects (planned)
+- Template library (planned)
 - Share project files
 
 #### Phase 5: Advanced Features (Future)
@@ -129,6 +130,7 @@ Select Photos → AI/Manual Layout → Customize → Export/Share
 - Cold start time: <2 seconds
 - Layout generation: <100ms per layout
 - Export time: <5 seconds for typical collage
+- Video export: <30 seconds for 10-slide slideshow
 - Memory usage: <200MB with 20 images
 
 ## Target Audience
@@ -157,16 +159,20 @@ Select Photos → AI/Manual Layout → Customize → Export/Share
 ## Competitive Positioning
 
 ### vs. Traditional Grid Apps (PicCollage, Layout)
-- **Our advantage**: AI suggestions, smarter layouts, better export quality
+- **Our advantage**: AI suggestions, smarter layouts, better export quality, background music
 - **Their advantage**: Established user base, sticker libraries
 
 ### vs. Professional Tools (Canva Mobile, Adobe Express)
-- **Our advantage**: Faster, simpler, better privacy, local AI
+- **Our advantage**: Faster, simpler, better privacy, local AI, bundled music
 - **Their advantage**: More features, templates, brand recognition
 
 ### vs. AI Photo Tools (Google Photos, Apple Photos)
 - **Our advantage**: More control, better layouts, privacy
 - **Their advantage**: Integrated ecosystem, automatic organization
+
+### vs. Slideshow Apps (Google Photos, Apple Slideshow)
+- **Our advantage**: Custom transitions, music control, video export with audio
+- **Their advantage**: Automatic slideshow generation, deeper ecosystem integration
 
 ## Design Philosophy
 
@@ -192,5 +198,6 @@ SZ Pic becomes the go-to tool for visual storytelling through photos:
 - Integration with printing services
 - Multi-user collaborative projects
 - Video collages (multiple videos in one frame)
+- Custom music playlists and audio ducking
 
 The app should feel like having a professional designer in your pocket who instantly understands your photos and suggests the perfect way to present them.

@@ -18,7 +18,7 @@
 
 ## Dependencies
 
-Located in `/Users/sz/StudioProjects/sz_pic_flutter/pubspec.yaml`
+Located in `C:/Users/sz/AndroidStudioProjects/sz_pic_flutter/pubspec.yaml`
 
 ### State Management
 - **provider ^6.1.1**: Dependency injection and state sharing
@@ -35,11 +35,7 @@ Located in `/Users/sz/StudioProjects/sz_pic_flutter/pubspec.yaml`
   - Decode images, get dimensions
   - **JPEG Encoding**: Used in export feature to convert PNG to JPEG with quality control
   - `img.encodeJpg(decoded, quality: 92)` for collage exports
-- **slideshow_engine** (`lib/core/services/slideshow_engine.dart`): Slideshow project creation and management
-  - `createSlideshow()`: Creates SlideshowProject from images
-  - `formatDurationLong()`: Formats duration for display
-  - Manages slide ordering and transition configuration
-- **photo_view ^0.14.0**: Image viewer widget (planned usage)
+- **photo_view ^0.15.0**: Image viewer widget
 - **cached_network_image ^3.3.1**: Network image caching (planned)
 
 ### HTTP & AI Integration
@@ -60,12 +56,12 @@ Located in `/Users/sz/StudioProjects/sz_pic_flutter/pubspec.yaml`
 - **path ^1.8.3**: Path manipulation utilities
 
 ### File Handling
-- **file_picker ^8.0.0+1**: Directory and file picker via native dialogs
+- **file_picker ^10.3.8**: Directory and file picker via native dialogs
   - Used: `FilePicker.platform.getDirectoryPath()` for export location selection
   - Prompting user to choose export folder for PNG/JPEG saves
   - Native save dialogs on Android/iOS/Desktop
-- **permission_handler ^11.2.0**: Runtime permissions
-  - Planned: Request camera, storage permissions
+- **permission_handler ^12.0.1**: Runtime permissions
+  - Used: Request camera, storage permissions
 
 ### UI/UX
 - **LoadingDialog** (custom widget): Reusable loading UI component
@@ -78,20 +74,28 @@ Located in `/Users/sz/StudioProjects/sz_pic_flutter/pubspec.yaml`
 - **shimmer ^3.0.0**: Loading animations
   - Planned: Skeleton screens
 
+### Audio (Music Playback)
+- **just_audio ^0.9.37**: Audio playback service for slideshow background music
+  - Used by MusicService for track playback, loop mode, volume control
+  - Supports fade transitions and concurrent call protection
+- **audio_session ^0.1.16**: Audio session management
+  - Configures proper background playback for music
+
 ### Video
 - **video_player ^2.8.2**: Video playback for slideshow preview
 - **ffmpeg_kit_flutter_new 4.1.0**: Video processing for slideshow export
  - Native dependency: `com.antonkarpenko:ffmpeg-kit-full-gpl:2.1.0`
  - Uses concat manifest + `FFmpegKit.execute` in [`_exportVideo()`](lib/screens/slideshow/slideshow_editor_screen.dart:793)
- - Command applies even-dimension scaling (`scale=trunc(iw/2)*2:trunc(ih/2)*2`), `-fps_mode vfr`, `libx264`, `-crf 20`, `-preset veryfast`, `+faststart`
+ - Command applies even-dimension scaling (`scale=trunc(iw/2)*2:trunc(ih/2)*2`), `-fps_mode vfr`, `libx264`, `-crf 20`, `-preset ultrafast`, `+faststart`
  - Replaces deprecated flutter_ffmpeg / ffmpeg_kit_flutter_min
- - **Robust capture**: Precaches slide images and waits for an extra paint frame before capturing to avoid blank/black frames; per-frame logging records image presence/size and manifest contents
+ - **Optimized capture**: 15fps for transitions, 5fps for static slides (single frame with concat duration)
+ - **Audio support**: Includes bundled music tracks in video export
 
 ### Utilities
 - **uuid ^4.3.3**: Unique ID generation
   - Used: All model IDs
   - `const Uuid().v4()`
-- **intl ^0.19.0**: Internationalization
+- **intl ^0.20.2**: Internationalization
   - Planned: Date formatting, localization
 - **equatable ^2.0.5**: Value equality for models
   - All models extend Equatable
@@ -182,18 +186,17 @@ Located in `/Users/sz/StudioProjects/sz_pic_flutter/pubspec.yaml`
 - **Export**: Blob-based download via [`downloadImage()`](lib/core/utils/export_helper_web.dart:1)
   - Creates anchor element with download attribute
   - Triggers automatic download with timestamp filename
+- **Audio**: Disabled on web builds (no just_audio support)
 - **PWA**: Progressive Web App support (planned)
 - **Status**: Basic functionality implemented, needs testing
 
 ## Development Environment
 
-### Mac M4 (Apple Silicon)
-- **Architecture**: ARM64
-- **Android Emulator**: ARM-based images faster
-- **Rosetta**: Not needed for Flutter
-- **Homebrew**: `/opt/homebrew` prefix
-- **Performance**: Excellent (M4 chip)
-- **Memory**: Handles multiple emulators
+### Windows 11
+- **Architecture**: x64
+- **Android Emulator**: Standard Android emulator
+- **Development**: Android Studio
+- **Performance**: Good for Flutter development
 
 ### Setup Commands
 ```bash
@@ -203,7 +206,7 @@ flutter pub get
 flutter run
 
 # Ollama
-brew install ollama
+# Run locally at http://localhost:11434
 ollama serve
 ollama pull llama3.2-vision
 
@@ -225,7 +228,7 @@ flutter create --platforms android,ios,web .
 
 3. **Export Size**: High-res exports (3x) create large files
    - PNG: ~5-10 MB per collage
-   - Future: JPEG for smaller size
+   - JPEG: Smaller size with quality control
 
 4. **Canvas Rendering**: Fixed 1000x1000 px
    - Works well for 1:1 aspect
@@ -235,7 +238,11 @@ flutter create --platforms android,ios,web .
 5. **Platform Differences**:
    - Android: File access changing (scoped storage)
    - iOS: Sandbox restrictions
-   - Web: Limited file system access
+   - Web: Limited file system access, no audio playback
+
+6. **Video Export Performance**: GPU surface loss with high frame rates
+   - Mitigation: Reduced frame rates (15fps transition, 5fps static)
+   - Single frame capture for static slides with concat demuxer duration
 
 ## Code Quality Tools
 
@@ -291,13 +298,22 @@ flutter run
   - develop: Active development
   - feature/*: New features
 
+## Assets
+
+### Music Assets (Bundled)
+Located in `assets/music/`:
+- `upbeat_carefree.mp3` - "Carefree" by Kevin MacLeod (CC BY 3.0)
+- `nostalgic_dream_culture.mp3` - "Dream Culture" by Kevin MacLeod (CC BY 3.0)
+- `ambient_atlantean_twilight.mp3` - "Atlantean Twilight" by Kevin MacLeod (CC BY 3.0)
+- `licenses.md` - Full attribution and license information
+
 ## Future Technology Additions
 
 1. **Firebase**: Analytics, Crashlytics, Cloud Storage
-2. **FFmpeg**: Video processing and export
-3. **ML Kit**: On-device image analysis
-4. **In-App Purchase**: Premium features
-5. **Push Notifications**: Updates and tips
-6. **Cloud Functions**: Server-side processing
-7. **GraphQL**: Efficient API queries
-8. **AR Core/Kit**: AR collage placement
+2. **ML Kit**: On-device image analysis
+3. **In-App Purchase**: Premium features
+4. **Push Notifications**: Updates and tips
+5. **Cloud Functions**: Server-side processing
+6. **GraphQL**: Efficient API queries
+7. **AR Core/Kit**: AR collage placement
+8. **User Music Library**: Allow selecting music from device
