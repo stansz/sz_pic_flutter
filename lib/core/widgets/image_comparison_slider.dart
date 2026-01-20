@@ -167,7 +167,7 @@ class _ImageComparisonSliderState extends State<ImageComparisonSlider> {
               color: widget.comparison.sliderColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
+                  color: Colors.black.withOpacity(0.3),
                   blurRadius: 4,
                   spreadRadius: 1,
                 ),
@@ -189,7 +189,7 @@ class _ImageComparisonSliderState extends State<ImageComparisonSlider> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.6),
+              color: Colors.black.withOpacity(0.6),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
@@ -209,7 +209,7 @@ class _ImageComparisonSliderState extends State<ImageComparisonSlider> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.6),
+              color: Colors.black.withOpacity(0.6),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
