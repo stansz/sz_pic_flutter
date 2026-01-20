@@ -12,8 +12,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -23,10 +23,13 @@ import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import '../../core/models/image_item.dart';
 import '../../core/models/photo_filter.dart';
+import '../../core/services/image_comparison_service.dart';
 import '../../core/utils/export_helper.dart';
 import '../../core/widgets/filtered_image_preview.dart';
 import '../../core/widgets/filter_thumbnail.dart';
 import '../../core/widgets/loading_dialog.dart';
+import '../../core/widgets/image_comparison_slider.dart';
+import '../../core/widgets/juxtapose_web_view.dart';
 
 enum PhotoExportFormat { png, jpeg }
 
@@ -51,7 +54,18 @@ class PhotoEditorScreen extends StatefulWidget {
 class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
   PhotoFilterType _selectedFilter = PhotoFilterType.none;
   bool _isProcessing = false;
+  bool _showComparison = false;
   final GlobalKey _imageKey = GlobalKey();
+
+  String _getFilteredImagePath() {
+    // For web, we need to use the bytes directly
+    // For native, we use the file path
+    if (kIsWeb && widget.image.bytes != null) {
+      // Create a blob URL for web
+      return 'data:image/png;base64,${base64Encode(widget.image.bytes!)}';
+    }
+    return widget.image.path;
+  }
 
   Future<void> _exportImage(PhotoExportFormat format) async {
     setState(() {
@@ -203,6 +217,18 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
         foregroundColor: Colors.white,
         actions: [
           IconButton(
+            icon: Icon(
+              _showComparison ? Icons.filter_none : Icons.compare,
+              color: _showComparison ? Colors.amber : Colors.white,
+            ),
+            tooltip: _showComparison ? 'Hide Comparison' : 'Compare Original',
+            onPressed: () {
+              setState(() {
+                _showComparison = !_showComparison;
+              });
+            },
+          ),
+          IconButton(
             icon: _isProcessing
                 ? const SizedBox(
                     width: 20,
@@ -225,20 +251,22 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // REAL-TIME PREVIEW - Main image with filter applied
+            // REAL-TIME PREVIEW - Main image with filter applied or comparison view
             Expanded(
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: RepaintBoundary(
-                    key: _imageKey,
-                    child: FilteredImagePreview(
-                      image: kIsWeb && widget.image.bytes != null
-                          ? MemoryImage(widget.image.bytes!)
-                          : FileImage(File(widget.image.path)) as ImageProvider,
-                      filter: filter,
-                    ),
-                  ),
+                  child: _showComparison
+                      ? _buildComparisonView()
+                      : RepaintBoundary(
+                          key: _imageKey,
+                          child: FilteredImagePreview(
+                            image: kIsWeb && widget.image.bytes != null
+                                ? MemoryImage(widget.image.bytes!)
+                                : FileImage(File(widget.image.path)) as ImageProvider,
+                            filter: filter,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -250,7 +278,7 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
                 color: theme.colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 4,
                     offset: const Offset(0, -2),
                   ),
@@ -279,5 +307,34 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildComparisonView() {
+    final filter = PhotoFilter.fromType(_selectedFilter);
+    
+    if (kIsWeb) {
+      return JuxtaposeWebView(
+        beforeImagePath: widget.image.path,
+        afterImagePath: _getFilteredImagePath(),
+        beforeLabel: 'Original',
+        afterLabel: _selectedFilter.name,
+        initialPosition: 0.5,
+      );
+    } else {
+      return ImageComparisonSlider(
+        comparison: ImageComparisonService.createDefaultComparison(
+          beforeImagePath: widget.image.path,
+          afterImagePath: widget.image.path, // Same path, filter will be applied via ColorFiltered
+          beforeLabel: 'Original',
+          afterLabel: _selectedFilter.name,
+        ),
+        height: 400,
+        interactive: true,
+        afterImageFilter: filter.colorFilter,
+        onSliderChange: (position) {
+          // Optional: track slider position
+        },
+      );
+    }
   }
 }
