@@ -56,14 +56,31 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
   bool _isProcessing = false;
   bool _showComparison = false;
   final GlobalKey _imageKey = GlobalKey();
+  String? _filteredImageDataUrl; // Cached filtered image data URL for web comparison
 
-  String _getFilteredImagePath() {
-    // For web, we need to use the bytes directly
-    // For native, we use the file path
-    if (kIsWeb && widget.image.bytes != null) {
-      // Create a blob URL for web
-      return 'data:image/png;base64,${base64Encode(widget.image.bytes!)}';
+  Future<String> _getFilteredImagePath() async {
+    // For web, capture filtered image and create a data URL
+    // For native, we use the file path (filter applied via ColorFiltered)
+    if (kIsWeb) {
+      // If we have a cached filtered image, use it
+      if (_filteredImageDataUrl != null) {
+        return _filteredImageDataUrl!;
+      }
+      
+      // Capture the filtered image
+      final boundary = _imageKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) return widget.image.path;
+      
+      final image = await boundary.toImage(pixelRatio: 1.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return widget.image.path;
+      
+      final bytes = byteData.buffer.asUint8List();
+      _filteredImageDataUrl = 'data:image/png;base64,${base64Encode(bytes)}';
+      return _filteredImageDataUrl!;
     }
+    
+    // Native: return the same path, filter will be applied via ColorFiltered
     return widget.image.path;
   }
 
@@ -79,7 +96,7 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
     );
 
     try {
-      // Capture the filtered widget as image
+      // Capture filtered widget as image
       final boundary = _imageKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) throw Exception('Failed to find image boundary');
 
@@ -297,6 +314,8 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
                     onTap: () {
                       setState(() {
                         _selectedFilter = filterType;
+                        // Invalidate cached filtered image when filter changes
+                        _filteredImageDataUrl = null;
                       });
                     },
                   );
@@ -313,12 +332,30 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
     final filter = PhotoFilter.fromType(_selectedFilter);
     
     if (kIsWeb) {
-      return JuxtaposeWebView(
-        beforeImagePath: widget.image.path,
-        afterImagePath: _getFilteredImagePath(),
-        beforeLabel: 'Original',
-        afterLabel: _selectedFilter.name,
-        initialPosition: 0.5,
+      return FutureBuilder<String>(
+        future: _getFilteredImagePath(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            );
+          }
+          if (snapshot.hasError || !snapshot.hasData) {
+            return const Center(
+              child: Text(
+                'Failed to load comparison view',
+                style: TextStyle(color: Colors.white),
+              ),
+            );
+          }
+          return JuxtaposeWebView(
+            beforeImagePath: widget.image.path,
+            afterImagePath: snapshot.data!,
+            beforeLabel: 'Original',
+            afterLabel: _selectedFilter.name,
+            initialPosition: 0.5,
+          );
+        },
       );
     } else {
       return ImageComparisonSlider(

@@ -7,6 +7,19 @@
 
 ## Recent Changes
 
+### Current Session (Jan 20, 2026)
+1. **Image Comparison Feature**: Added image comparison toggle to photo editor
+   - Created [`ImageComparisonSlider`](lib/core/widgets/image_comparison_slider.dart:1) widget for native platforms with interactive slider
+   - Created [`JuxtaposeWebView`](lib/core/widgets/juxtapose_web_view.dart:1) widget for web platform using WebView
+   - Created [`ImageComparison`](lib/core/models/image_comparison.dart:1) model for comparison configuration
+   - Created [`ImageComparisonService`](lib/core/services/image_comparison_service.dart:1) for managing comparison settings
+   - Integrated comparison toggle into [`PhotoEditorScreen`](lib/screens/photo_editor/photo_editor_screen.dart:1) with platform-specific implementations
+   - Added webview_flutter dependency for web comparison support
+   - Web comparison captures filtered image as data URL to show actual filtered result
+   - Native comparison applies filter via ColorFiltered overlay
+   - Fixed CRITICAL issues: Used correct `withValues()` API for Flutter 3.10.4+ (PR review bot was incorrect)
+   - Fixed WARNING issue: Web comparison now properly captures and displays filtered image instead of original
+
 ### Current Session (Jan 18, 2026)
 1. **Photo Editor Redesign**: Replaced CPU-intensive film grain editor with GPU-accelerated filter system
    - Created [`PhotoFilter`](lib/core/models/photo_filter.dart:1) model with 8 curated filter types (Original, Vintage, B&W, Cool, Warm, Vibrant, Muted, Dramatic)
