@@ -1,5 +1,8 @@
 # SZ Picture Create - AI-Powered Collage & Slideshow Creator
 
+Web Version: 
+https://szpic.netlify.app/
+
 <div align="center">
 
 ![Flutter](https://img.shields.io/badge/Flutter-3.10.4+-02569B?logo=flutter)
