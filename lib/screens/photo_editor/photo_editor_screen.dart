@@ -12,8 +12,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -23,10 +23,13 @@ import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import '../../core/models/image_item.dart';
 import '../../core/models/photo_filter.dart';
+import '../../core/services/image_comparison_service.dart';
 import '../../core/utils/export_helper.dart';
 import '../../core/widgets/filtered_image_preview.dart';
 import '../../core/widgets/filter_thumbnail.dart';
 import '../../core/widgets/loading_dialog.dart';
+import '../../core/widgets/image_comparison_slider.dart';
+import '../../core/widgets/web_image_comparison.dart';
 
 enum PhotoExportFormat { png, jpeg }
 
@@ -51,7 +54,105 @@ class PhotoEditorScreen extends StatefulWidget {
 class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
   PhotoFilterType _selectedFilter = PhotoFilterType.none;
   bool _isProcessing = false;
+  bool _showComparison = false;
   final GlobalKey _imageKey = GlobalKey();
+  String? _filteredImageDataUrl; // Cached filtered image data URL for web comparison
+  bool _isCapturingFilteredImage = false; // Flag to prevent duplicate captures
+
+  @override
+  void initState() {
+    super.initState();
+    // For web, capture initial filtered image after widget builds
+    if (kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await _captureFilteredImage();
+      });
+    }
+  }
+
+  Future<void> _captureFilteredImage() async {
+    // For web, capture the current filtered image and cache it as data URL
+    // This must be called while RepaintBoundary is still visible (not in comparison mode)
+    if (kIsWeb && !_isCapturingFilteredImage) {
+      setState(() {
+        _isCapturingFilteredImage = true;
+      });
+      
+      try {
+        // Wait for widget to settle
+        await Future.delayed(const Duration(milliseconds: 100));
+        
+        // Capture the filtered image
+        final boundary = _imageKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+        if (boundary == null) {
+          print('Warning: Could not find render boundary for filtered image capture');
+          return;
+        }
+        
+        final image = await boundary.toImage(pixelRatio: 1.0);
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        if (byteData == null) {
+          print('Warning: Could not convert filtered image to bytes');
+          return;
+        }
+        
+        final bytes = byteData.buffer.asUint8List();
+        _filteredImageDataUrl = 'data:image/png;base64,${base64Encode(bytes)}';
+        print('Captured filtered image: ${bytes.length} bytes');
+      } catch (e) {
+        print('Error capturing filtered image: $e');
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isCapturingFilteredImage = false;
+          });
+        }
+      }
+    }
+  }
+
+  Future<String> _getFilteredImagePath() async {
+    // For web, return the cached filtered image data URL
+    // For native, we use the file path (filter applied via ColorFiltered)
+    if (kIsWeb) {
+      // If we have a cached filtered image, use it
+      if (_filteredImageDataUrl != null) {
+        return _filteredImageDataUrl!;
+      }
+      
+      // If no cached image, return original path (fallback)
+      print('Warning: No cached filtered image available, using original');
+      return widget.image.path;
+    }
+    
+    // Native: return the same path, filter will be applied via ColorFiltered
+    return widget.image.path;
+  }
+
+  Future<String> _getOriginalImagePath() async {
+    // For web, convert original image bytes to data URL
+    // For native, return the file path
+    if (kIsWeb) {
+      if (widget.image.bytes != null) {
+        return 'data:image/png;base64,${base64Encode(widget.image.bytes!)}';
+      }
+      // Fallback to path if bytes are not available
+      return widget.image.path;
+    }
+    
+    // Native: return the file path
+    return widget.image.path;
+  }
+
+  Future<Map<String, String>> _getComparisonImagePaths() async {
+    // Get both original and filtered image paths for comparison
+    final originalPath = await _getOriginalImagePath();
+    final filteredPath = await _getFilteredImagePath();
+    return {
+      'original': originalPath,
+      'filtered': filteredPath,
+    };
+  }
 
   Future<void> _exportImage(PhotoExportFormat format) async {
     setState(() {
@@ -65,7 +166,7 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
     );
 
     try {
-      // Capture the filtered widget as image
+      // Capture filtered widget as image
       final boundary = _imageKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) throw Exception('Failed to find image boundary');
 
@@ -203,16 +304,30 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
         foregroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: _isProcessing
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                  )
-                : const Icon(Icons.save),
-            tooltip: 'Export',
-            onPressed: _isProcessing ? null : _showExportOptions,
+            icon: Icon(
+              _showComparison ? Icons.filter_none : Icons.compare,
+              color: _showComparison ? Colors.amber : Colors.white,
+            ),
+            tooltip: _showComparison ? 'Hide Comparison' : 'Compare Original',
+            onPressed: () {
+              setState(() {
+                _showComparison = !_showComparison;
+              });
+            },
           ),
+          // Hide save/export icon when in comparison mode to prevent errors
+          if (!_showComparison)
+            IconButton(
+              icon: _isProcessing
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.save),
+              tooltip: 'Export',
+              onPressed: _isProcessing ? null : _showExportOptions,
+            ),
           IconButton(
             icon: const Icon(Icons.home_outlined),
             tooltip: 'Return to Home',
@@ -225,20 +340,22 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // REAL-TIME PREVIEW - Main image with filter applied
+            // REAL-TIME PREVIEW - Main image with filter applied or comparison view
             Expanded(
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: RepaintBoundary(
-                    key: _imageKey,
-                    child: FilteredImagePreview(
-                      image: kIsWeb && widget.image.bytes != null
-                          ? MemoryImage(widget.image.bytes!)
-                          : FileImage(File(widget.image.path)) as ImageProvider,
-                      filter: filter,
-                    ),
-                  ),
+                  child: _showComparison
+                      ? _buildComparisonView()
+                      : RepaintBoundary(
+                          key: _imageKey,
+                          child: FilteredImagePreview(
+                            image: kIsWeb && widget.image.bytes != null
+                                ? MemoryImage(widget.image.bytes!)
+                                : FileImage(File(widget.image.path)) as ImageProvider,
+                            filter: filter,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -250,7 +367,7 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
                 color: theme.colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 4,
                     offset: const Offset(0, -2),
                   ),
@@ -266,10 +383,17 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
                     image: widget.image,
                     filterType: filterType,
                     isSelected: _selectedFilter == filterType,
-                    onTap: () {
+                    onTap: () async {
                       setState(() {
                         _selectedFilter = filterType;
+                        // Invalidate cached filtered image when filter changes
+                        _filteredImageDataUrl = null;
                       });
+                      
+                      // For web, capture filtered image immediately after filter change
+                      if (kIsWeb) {
+                        await _captureFilteredImage();
+                      }
                     },
                   );
                 },
@@ -279,5 +403,53 @@ class _PhotoEditorScreenState extends State<PhotoEditorScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildComparisonView() {
+    final filter = PhotoFilter.fromType(_selectedFilter);
+    
+    if (kIsWeb) {
+      return FutureBuilder<Map<String, String>>(
+        future: _getComparisonImagePaths(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            );
+          }
+          if (snapshot.hasError || !snapshot.hasData) {
+            return const Center(
+              child: Text(
+                'Failed to load comparison view',
+                style: TextStyle(color: Colors.white),
+              ),
+            );
+          }
+          final paths = snapshot.data!;
+          return WebImageComparison(
+            beforeImagePath: paths['original']!,
+            afterImagePath: paths['filtered']!,
+            beforeLabel: 'Original',
+            afterLabel: _selectedFilter.name,
+            initialPosition: 0.5,
+          );
+        },
+      );
+    } else {
+      return ImageComparisonSlider(
+        comparison: ImageComparisonService.createDefaultComparison(
+          beforeImagePath: widget.image.path,
+          afterImagePath: widget.image.path, // Same path, filter will be applied via ColorFiltered
+          beforeLabel: 'Original',
+          afterLabel: _selectedFilter.name,
+        ),
+        height: 400,
+        interactive: true,
+        afterImageFilter: filter.colorFilter,
+        onSliderChange: (position) {
+          // Optional: track slider position
+        },
+      );
+    }
   }
 }
