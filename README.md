@@ -68,17 +68,30 @@ SZ Picture Create is a cross-platform mobile application that combines powerful 
 - ⏳ **Color Scheme Analysis**: Complementary color suggestions
 - ⏳ **Image Enhancement**: Filter and improvement suggestions
 
-> **Note**: AI features are currently in development and not yet available for use.
+> **Note**: AI features are currently in development and not yet available for use. There is no settings UI yet — the app defaults to a local Ollama instance (`http://localhost:11434`) configured in `lib/main.dart`.
+
+## 🩺 Current Status (September 2026)
+
+A full code review was completed in September 2026 (see [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for findings and next steps). Summary:
+
+- ✅ `flutter pub get` / `flutter analyze` clean (0 errors) / `flutter test` green on Flutter 3.38.7
+- ✅ No secrets in code or git history
+- ⚠️ Test coverage is minimal (one smoke test); no CI; docs were stale and have been refreshed
+
+The web version at https://szpic.netlify.app/ may lag behind `main` — redeploy after pulling recent changes.
 
 ## 🗺️ Roadmap
 
-- ✅ Web deployment (partially implemented - basic functionality)
+- ✅ Web deployment (https://szpic.netlify.app/) — basic functionality
+- ⏳ Film grain photo effects (planned, see `plans/film-grain-feature.md` — not yet implemented)
 - ⏳ Cloud storage
 - ⏳ Social sharing
 - ⏳ iOS support
 - ⏳ AI features testing
 - ⏳ Project persistence (SQLite)
 - ⏳ Project gallery screen
+- ⏳ Settings screen (incl. AI provider configuration)
+- ⏳ Undo/redo, drag-and-drop editing for grid/masonry/template layouts
 
 See [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for detailed progress.
 
@@ -97,7 +110,7 @@ See the [LICENSE](LICENSE) file for the full license text.
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/sz_pic/issues)
+- **Issues**: [GitHub Issues](https://github.com/stansz/sz_pic_flutter/issues)
 
 ---
 

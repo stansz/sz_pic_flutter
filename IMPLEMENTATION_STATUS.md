@@ -1,267 +1,128 @@
 # SZ Pic - Implementation Status
 
-## ✅ Completed Features
-
-### Core Infrastructure
-- ✅ Flutter project setup and configuration
-- ✅ Dependencies configured in `pubspec.yaml`
-- ✅ Android permissions configured
-- ✅ Provider state management setup
-- ✅ Material Design 3 theming (light & dark mode)
-
-### Data Models
-- ✅ [`ImageItem`](lib/core/models/image_item.dart) - Image metadata model
-- ✅ [`CollageLayout`](lib/core/models/collage_models.dart) - Layout structure with cells
-- ✅ [`LayoutCell`](lib/core/models/collage_models.dart) - Individual cell in collage
-- ✅ [`CollageProject`](lib/core/models/collage_models.dart) - Complete collage project
-- ✅ [`SlideshowProject`](lib/core/models/slideshow_models.dart) - Slideshow project model
-- ✅ [`Slide`](lib/core/models/slideshow_models.dart) - Individual slideshow slide
-- ✅ [`TransitionEffect`](lib/core/models/slideshow_models.dart) - Transition animations
-- ✅ [`AIProviderConfig`](lib/core/models/ai_models.dart) - AI provider configuration
-- ✅ [`AIRecommendation`](lib/core/models/ai_models.dart) - AI-generated suggestions
-- ✅ [`LayoutSuggestionRequest/Response`](lib/core/models/ai_models.dart) - AI API models
-
-### Services
-- 🚧 [`AIProvider`](lib/core/services/ai_provider.dart) - Abstract AI provider interface
-- 🚧 [`OllamaProvider`](lib/core/services/ollama_provider.dart) - Local Ollama integration
-- 🚧 [`OpenRouterProvider`](lib/core/services/openrouter_provider.dart) - Cloud AI integration
-- ✅ [`CollageEngine`](lib/core/services/collage_engine.dart) - Layout generation algorithms:
-  - Grid layout (evenly distributed cells)
-  - Masonry layout (Pinterest-style)
-  - Template layouts (2-5 image presets)
-  - Freestyle layout (random positioning with rotation)
-- ✅ [`ImagePickerService`](lib/core/services/image_picker_service.dart) - Image selection from gallery/camera
-
-### User Interface
-- ✅ [`HomeScreen`](lib/screens/home_screen.dart) - Main navigation menu
-- ✅ [`CollageCreatorScreen`](lib/screens/collage/collage_creator_screen.dart) - Layout selection with AI suggestions
-- ✅ [`CollageEditorScreen`](lib/screens/collage/collage_editor_screen.dart) - Collage editing and export
-- ✅ [`FreestyleEditorScreen`](lib/screens/collage/freestyle_editor_screen.dart) - Interactive freestyle editor with drag, resize, rotate, and layer management
-
-### AI Integration
-- 🚧 Dual AI provider support (Ollama + OpenRouter)
-- 🚧 Layout suggestion generation
-- 🚧 Color scheme recommendations
-- 🚧 AI availability checking
-- 🚧 Graceful fallback handling
-
-### Export Features
-- ✅ PNG export (high quality)
-- ✅ JPEG export (smaller file size)
-- ✅ RepaintBoundary for canvas capture
-- ✅ File system storage with user-selected directory
-- 🚧 Web download support
-
-## 🚧 In Progress / Partially Complete
-
-### Collage Features
-- ✅ Background color customization 
-- ✅ Aspect ratio adjustment 
-- ✅ Spacing controls 
-- ✅ Image shuffling
-- ✅ Freestyle editor with full interactive controls (drag, resize, rotate, layer management)
-- 🚧 Drag-and-drop cell editing for other layouts (grid, masonry, template)
-
-### Export Features
-- ✅ JPEG export (complete)
-- ✅ PDF export (planned)
-- 🚧 Share functionality
-
-## ⏳ Planned Features
-
-### Slideshow Creator
-- ✅ Slideshow creation UI
-- ✅ Timeline-based editor
-- ✅ Transition effect selector
-- ⏳ Music/audio integration
-- ✅ Preview playback
-- ✅ Video export (MP4)
-
-### Project Management
-- ⏳ Save/load collage projects
-- ⏳ Project gallery view
-- ⏳ SQLite database integration
-- ⏳ Project thumbnails
-- ⏳ Project search and filtering
-
-### Settings
-- ⏳ Settings screen
-- ⏳ AI provider configuration UI
-- ⏳ Ollama connection settings
-- ⏳ OpenRouter API key management
-- ⏳ Model selection
-- ⏳ Export quality preferences
-- ⏳ Theme selection
-
-### Advanced AI Features
-- ⏳ Image enhancement suggestions
-- ⏳ Filter recommendations
-- ⏳ Text overlay suggestions
-- ⏳ Composition analysis
-- ⏳ Color harmony analysis with visual previews
-
-### Advanced Collage Features
-- ⏳ Custom border styles
-- ⏳ Shadow effects
-- ⏳ Text overlays
-- ⏳ Stickers and decorations
-- ⏳ Filters and effects
-- ⏳ Undo/redo functionality
-
-### Multi-platform Support
-- ⏳ iOS build configuration
-- ⏳ Web deployment setup
-- ⏳ Platform-specific optimizations
-- ⏳ Responsive UI for different screen sizes
-
-## 📦 Dependencies Used
-
-### Core Flutter
-- `flutter` - Flutter SDK
-- `provider` - State management
-- `cupertino_icons` - iOS-style icons
-
-### Image Handling
-- `image_picker` - Gallery/camera access
-- `image` - Image processing
-- `photo_view` - Image viewing
-- `cached_network_image` - Image caching
-
-### Networking & AI
-- `http` - HTTP client
-- `dio` - Advanced HTTP client for AI APIs
-
-### Storage
-- `shared_preferences` - Simple key-value storage
-- `path_provider` - File system paths
-- `sqflite` - Local database
-- `path` - Path manipulation
-
-### UI/UX
-- `flutter_staggered_grid_view` - Advanced grid layouts
-- `shimmer` - Loading animations
-
-### Video (Planned)
-- `video_player` - Video playback
-- _FFmpeg package to be added when implementing slideshow export_
-
-### Utilities
-- `uuid` - Unique ID generation
-- `intl` - Internationalization
-- `equatable` - Value equality
-- `permission_handler` - Runtime permissions
-
-## 🎯 Next Steps
-
-### Phase 1: Complete Current Features (High Priority)
-1. Implement background color picker in collage editor
-2. Add aspect ratio adjustment controls
-3. Add spacing adjustment controls
-4. Implement cell drag-and-drop for grid, masonry, and template layouts
-5. Add undo/redo functionality
-
-### Phase 2: Slideshow Creator (Medium Priority)
-1. Create slideshow creation UI
-2. Implement timeline editor
-3. Add transition effects
-4. Integrate video player for preview
-5. Implement video export
-
-### Phase 3: Project Management (Medium Priority)
-1. Create settings screen
-2. Implement AI configuration UI
-3. Add project save/load
-4. Create project gallery
-5. Add SQLite database
-
-### Phase 4: Polish & Optimize (Low Priority)
-1. Add animations and transitions
-2. Optimize performance
-3. Add comprehensive error handling
-4. Implement analytics
-5. Create onboarding flow
-6. Add iOS and Web support
-
-## 🧪 Testing Status
-
-### Manual Testing
-- ✅ App launches successfully (tested on Android emulator)
-- ✅ Build completes without errors
-- ✅ Image picker opens
-- ✅ Layout generation works
-- ✅ Layout preview displays correctly
-- ✅ Collage editor renders images
-- ✅ Freestyle editor with interactive controls (drag, resize, rotate, layers)
-- ✅ Export saves to file system (PNG and JPEG)
-- ✅ Fixed deprecated flutter_ffmpeg build issue
-
-### Automated Testing
-- ⏳ Unit tests for models
-- ⏳ Unit tests for services
-- ⏳ Widget tests for UI
-- ⏳ Integration tests
-- ⏳ Performance tests
-
-## 📝 Known Issues
-
-1. **Image scaling**: Fixed-size canvas (1000x1000) may not work for all aspect ratios
-2. **AI Response Parsing**: Relies on regex to extract JSON from AI responses (may fail with complex responses)
-3. **Memory Management**: Large images may cause memory issues
-4. **Permission Handling**: Runtime permission requests not fully implemented
-5. **Error Messages**: Generic error messages need more specificity
-6. **FFmpeg Removed**: Video export functionality removed temporarily due to deprecated package - will be re-added with ffmpeg_kit_flutter_min when implementing slideshow export
-
-## 🔧 Technical Debt
-
-1. Add proper error handling throughout the app
-2. Implement loading states for all async operations
-3. Add input validation
-4. Optimize image loading and caching
-5. Refactor repetitive UI code into reusable widgets
-6. Add proper logging system
-7. Implement feature flags for work-in-progress features
-8. Add comprehensive documentation for all services and models
-
-## 📱 Build & Run
-
-### Android
-```bash
-cd /Users/sz/StudioProjects/sz_pic_flutter
-flutter pub get
-flutter run
-```
-
-### Test AI Integration
-Ensure Ollama is running locally:
-```bash
-ollama serve
-ollama pull llama3.2-vision
-```
-
-The app will connect to Ollama at `http://localhost:11434` by default.
-
-## 🎨 UI Components
-
-### Implemented
-- Material Design 3 theming
-- Custom gradient backgrounds
-- Card-based navigation
-- Bottom sheet controls
-- Modal dialogs for AI suggestions
-- Loading indicators
-- Snackbar notifications
-
-### Planned
-- Bottom navigation bar
-- Floating action buttons
-- Animated transitions
-- Custom input fields
-- Image carousel
-- Timeline slider
-- Color picker wheel
+> **Source of truth** for current feature status, known issues, and next steps.
+> This file was fully refreshed after the September 2026 code review.
 
 ---
 
-**Last Updated**: January 4, 2026
-**Version**: 1.0.0-alpha
-**Status**: Development - Core features functional, AI integration working, Freestyle editor complete
+## 📊 Health Check (September 2026, Windows)
+
+| Check | Result |
+|---|---|
+| `flutter pub get` | ✅ Works (Flutter 3.38.7 stable / Dart 3.10.7) |
+| `flutter analyze` | ✅ 0 errors · 11 warnings · 51 infos |
+| `flutter test` | ✅ 1/1 passing (smoke test fixed in this review) |
+| Secrets scan (code + full git history) | ✅ Clean |
+| Windows desktop build | ⚠️ Not supported — several plugins (`just_audio`, `sqflite`, `permission_handler`) have no/poor Windows support. Target platforms are **Android** and **Web**. |
+| CI | ❌ None (no GitHub Actions workflows) |
+
+Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January 2026.
+
+---
+
+## ✅ Completed Features
+
+### Core Infrastructure
+- Flutter project setup, Android permissions, Provider wiring in `main.dart`
+- Material Design 3 theming (light & dark, green seed)
+- Cross-platform export helpers (web download vs. native file save)
+
+### Data Models
+- `ImageItem`, `CollageLayout`, `LayoutCell`, `CollageProject` (collage)
+- `SlideshowProject`, `Slide`, `TransitionEffect` (slideshow)
+- `AIProviderConfig`, `AIRecommendation`, layout suggestion request/response
+- `MusicTrack`, `PhotoFilter`, `ImageComparison`
+
+### Services
+- `CollageEngine` — Grid, Masonry, Template (2–5 image presets), Freestyle layouts
+- `ImagePickerService` — gallery/camera, multi-select, web byte caching
+- `SlideshowEngine` — slide sequencing and rendering
+- `MusicService` / `MusicLibrary` — bundled track playback, volume, fade in/out
+- `ImageComparisonService` — before/after comparison support
+
+### Photo Editor (`screens/photo_editor/`)
+- 8 filter presets (Original, Vintage, B&W, Cool, Warm, Vibrant, Muted, Dramatic)
+- Real-time preview, filter thumbnails, compare-original slider
+- PNG/JPEG export
+
+### Collage Creator (`screens/collage/`)
+- Layout selection with previews (Grid, Masonry, Template, Freestyle)
+- Background color picker (20 presets + custom HSV), aspect ratio, spacing controls
+- Freestyle editor: drag, resize, rotate, layer management, shuffle/reset
+- PNG/JPEG export via RepaintBoundary (3x pixel ratio), user-selected save location
+
+### Slideshow Creator (`screens/slideshow/`)
+- Timeline-based editor with preview playback
+- Transitions: fade, slide, zoom, dissolve, Ken Burns
+- Background music: 3 wired royalty-free tracks (Kevin MacLeod, CC BY 3.0), volume control, preview, auto fade-in/out
+- Export: MP4 video (ffmpeg_kit_flutter_new), PNG sequence, project JSON
+
+## 🚧 Partial / Inactive
+
+- **AI integration** — `OllamaProvider` (default, wired in `main.dart`) and `OpenRouterProvider` (exists, unwired). Layout suggestions + color analysis implemented at service level, but there is **no settings UI** and the collage creator's "Apply AI layout" is a TODO stub (`collage_creator_screen.dart:139`). README correctly marks AI as unavailable.
+
+## ⏳ Planned
+
+- Film grain effects — plan exists (`plans/film-grain-feature.md`); **not implemented** (no grain code in `lib/`). Note: home screen "Edit Photo" card subtitle already says "Apply film grain and effects" — update it or ship the feature.
+- Project persistence (SQLite), project gallery, save/load between sessions
+- Settings screen (AI provider config, API keys, export quality, theme)
+- Drag-and-drop cell editing for grid/masonry/template layouts
+- Undo/redo, PDF export, share, text overlays, stickers, custom borders/shadows
+- iOS build configuration
+
+---
+
+## 🩺 Code Review Findings (September 2026)
+
+### Bugs / quick fixes
+1. ~~Smoke test stale (expected old subtitle and removed menu cards)~~ — **fixed in this review**.
+2. `slideshow_editor_screen.dart:1562` — `onError` handler returns `Null` where `FutureOr<File>` is required (`invalid_return_type_for_catch_error`). Latent crash path during video export errors.
+3. `home_screen.dart:342` — unnecessary `!` on a non-nullable receiver (warning).
+4. Unused code: `_showComingSoon` and `_isHardwareAccelerationLikely` (dead elements), unused `dart:io` import in slideshow creator, unused local `transitionDurationMs`.
+5. 3 unused MP3 assets in `assets/music/` (`acoustic_porch_swing_days`, `cinematic_rains_will_fall`, + 1 more on disk than registered in `MusicLibrary`) — either wire them up or remove them from the bundle.
+
+### Analyzer noise (51 infos)
+- ~40 × `use_build_context_synchronously` — contexts used across async gaps guarded by "unrelated" mounted checks. Mostly benign but should be tidied (guard with the correct `mounted` or hoist navigator references).
+- `withOpacity` deprecated → migrate to `.withValues()`.
+- `print()` calls in photo editor → replace with `debugPrint` or a logger.
+
+### Structural / maintenance
+- **Monolith screens**: `slideshow_editor_screen.dart` (1,615 lines) and `freestyle_editor_screen.dart` (1,428 lines) with raw `setState`. Extract controllers/sub-widgets before adding features.
+- **No test coverage**: single smoke test. Models and engines (CollageEngine, SlideshowEngine, export helpers) are pure logic — easy wins for unit tests.
+- **No CI**: no GitHub Actions workflow running analyze/test on PRs.
+- **Placeholder Android ID**: `com.example.sz_pic_flutter` in `android/app/build.gradle(.kts)` — must change before any store release.
+- **Unpinned dependency**: `ffmpeg_kit_flutter_new: any` — pin a version for reproducible builds. 76 packages have newer versions; nothing currently blocking.
+- **Docs drift (fixed in this review)**: `PROJECT_UPDATE.md` was corrupted (single line of literal `\n` escapes) and claimed MIT license (actual: GPL-3.0); roadmaps predated the slideshow/photo editor work.
+
+---
+
+## 🎯 Recommended Next Steps (priority order)
+
+1. **Set up CI** — GitHub Actions: `flutter analyze` + `flutter test` on push/PR. Cheap and prevents the drift that built up over 8 months.
+2. **Fix review findings 2–5** — small diffs, removes all analyzer warnings.
+3. **Add unit tests** for `CollageEngine`, `SlideshowEngine`, models, and export helpers.
+4. **Pin `ffmpeg_kit_flutter_new`** to a concrete version.
+5. **Project persistence (SQLite)** — the biggest user-facing gap; projects vanish on app close.
+6. **Settings screen** — unlock AI provider config (OpenRouter key entry) instead of hardcoding Ollama in `main.dart`.
+7. **Refactor the two monolith screens** into controllers + widgets before the next feature push.
+8. **Redeploy web** (https://szpic.netlify.app/) from current `main`.
+9. Decide film grain: implement the plan or fix the home card subtitle.
+
+---
+
+## 🧪 Testing Status
+
+- **Automated**: 1 smoke test (home screen renders, menu cards present) — passing.
+- **Manual (last verified January 2026)**: app launches on Android emulator; collage flow, freestyle editor, exports, slideshow creation, music playback, MP4 export all reported working.
+
+## 📝 Known Issues
+
+1. Fixed 1000×1000 editor canvas may not suit all aspect ratios
+2. AI response parsing relies on regex JSON extraction — fragile
+3. Large images may cause memory pressure on older devices
+4. Runtime permission handling incomplete
+5. Generic error messages need specificity
+
+---
+
+**Last reviewed**: September 2026 · **Version**: 1.0.0+1 (UI footer says v0.5) · **Status**: Alpha — core features functional; persistence, settings, and AI UI missing
