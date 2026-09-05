@@ -31,9 +31,9 @@ SZ Pic ("SZ Picture Create") — a Flutter app for creating collages, slideshows
 
 ```bash
 flutter pub get
-flutter analyze      # must be 0 errors before commit
-flutter test         # smoke test must pass
-flutter run          # Android device/emulator
+flutter analyze --no-fatal-infos   # infos tolerated; errors+warnings fatal. Currently 51 infos, 0 warnings
+flutter test                         # smoke test must pass
+flutter run                          # Android device/emulator
 flutter run -d chrome
 flutter build apk --release   # release build (R8 enabled)
 flutter build web
@@ -69,7 +69,7 @@ flutter build web
 - `.github/workflows/web-deploy.yml` runs `flutter analyze` + `flutter test` on every push/PR (pinned to Flutter 3.38.7)
 - Pushes to `main` additionally build the web app (`--base-href /sz_pic_flutter/` — required for the project-pages subpath, don't drop it) and deploy to https://stansz.github.io/sz_pic_flutter/
 - The old https://szpic.netlify.app/ is a stale manual deploy — GitHub Pages is canonical now
-- Keep CI green; `flutter analyze` must stay at 0 errors (warnings/infos currently tolerated)
+- Keep CI green: zero errors and zero warnings enforced (`--fatal-warnings` default); infos tolerated via `--no-fatal-infos`. Note: plain `flutter analyze` exits 1 on infos in Flutter 3.38+ (`--fatal-infos` defaults on) — always check warnings count, not just exit code
 
 ## When you change things
 

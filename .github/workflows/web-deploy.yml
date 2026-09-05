@@ -28,7 +28,9 @@ jobs:
         run: flutter pub get
 
       - name: Analyze
-        run: flutter analyze
+        # Infos are tolerated (deprecations + use_build_context_synchronously noise);
+        # errors and warnings stay fatal (both default to on)
+        run: flutter analyze --no-fatal-infos
 
       - name: Test
         run: flutter test
