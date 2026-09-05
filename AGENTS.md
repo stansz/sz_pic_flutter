@@ -61,7 +61,7 @@ flutter build web
 ## Known structural issues
 
 - `slideshow_editor_screen.dart` (~1,600 lines) and `freestyle_editor_screen.dart` (~1,400 lines) are monoliths — extract controllers before adding features
-- Test coverage is one smoke test (CI runs it on every push/PR)
+- Test coverage: 45 unit/widget tests (engines, models, filters, music library) enforced by CI; widget/golden tests for screens still open
 - ~40 `use_build_context_synchronously` infos and deprecated `withOpacity` calls remain — prefer `withValues()` in new code
 
 ## CI & deployment

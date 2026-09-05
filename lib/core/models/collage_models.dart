@@ -24,6 +24,9 @@ enum LayoutType {
   smart, // AI-powered layout
 }
 
+/// Sentinel for copyWith nullable-field clearing (assigning null must stick).
+const Object _unset = Object();
+
 /// Represents a cell in the collage layout
 class LayoutCell extends Equatable {
   final String id;
@@ -56,7 +59,7 @@ class LayoutCell extends Equatable {
     double? y,
     double? width,
     double? height,
-    String? imageId,
+    Object? imageId = _unset,
     double? rotation,
     double? scale,
     double? imageOffsetX,
@@ -68,7 +71,7 @@ class LayoutCell extends Equatable {
       y: y ?? this.y,
       width: width ?? this.width,
       height: height ?? this.height,
-      imageId: imageId ?? this.imageId,
+      imageId: identical(imageId, _unset) ? this.imageId : imageId as String?,
       rotation: rotation ?? this.rotation,
       scale: scale ?? this.scale,
       imageOffsetX: imageOffsetX ?? this.imageOffsetX,

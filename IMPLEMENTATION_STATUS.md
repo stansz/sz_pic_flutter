@@ -81,8 +81,9 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 1. ~~Smoke test stale (expected old subtitle and removed menu cards)~~ — **fixed in this review**.
 2. ~~`slideshow_editor_screen.dart:1562` — `onError` handler returns `Null` where `FutureOr<File>` is required~~ — **fixed Sep 2026** (rewritten as `.then(_, onError:)`).
 3. ~~`home_screen.dart:342` — unnecessary `!` on a non-nullable receiver~~ — **fixed Sep 2026**.
-4. ~~Unused code: `_showComingSoon`, `_isHardwareAccelerationLikely`, unused `dart:io` import, unused local `transitionDurationMs`~~ — **all removed Sep 2026**, plus write-only `_activeCornerId` field and its 6 assignments, unused locals in `web_image_comparison.dart` and the freestyle free-crop handler.
+4. ~~Unused code~~ — **all removed Sep 2026**, plus write-only `_activeCornerId` field and its 6 assignments, unused locals in `web_image_comparison.dart` and the freestyle free-crop handler.
 5. 3 unused MP3 assets in `assets/music/` (`acoustic_porch_swing_days`, `cinematic_rains_will_fall`, + 1 more on disk than registered in `MusicLibrary`) — either wire them up or remove them from the bundle.
+6. **`SlideshowProject.removeMusic` was a silent no-op** — `copyWith(musicPath: null)` hit the `?? this.musicPath` fallback, so music could never be removed once added. Found while writing unit tests; fixed with a sentinel (`_musicSentinel`). Same latent pattern fixed in `LayoutCell.copyWith(imageId:)` (stale image ids when re-assigning fewer images). Regression tests cover both.
 
 ### Analyzer noise (51 infos)
 - ~40 × `use_build_context_synchronously` — contexts used across async gaps guarded by "unrelated" mounted checks. Mostly benign but should be tidied (guard with the correct `mounted` or hoist navigator references).
@@ -103,7 +104,7 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 
 1. ~~**Set up CI**~~ ✅ **Done (Sep 2026)** — GitHub Actions runs analyze + test on push/PR and auto-deploys the web build to GitHub Pages on `main`.
 2. ~~**Fix review findings 2–5**~~ — findings 2–4 ✅ fixed Sep 2026 (all analyzer warnings cleared; CI enforces zero warnings). Remaining: item 5 (unused MP3 assets).
-3. **Add unit tests** for `CollageEngine`, `SlideshowEngine`, models, and export helpers.
+3. ~~**Add unit tests**~~ ✅ **Done (Sep 2026)** — 45 tests across `collage_engine`, `slideshow_engine`, models (JSON roundtrips, copyWith semantics), `photo_filter`, and `music_library` (incl. asset-existence guard). Writing them surfaced and fixed two real copyWith bugs (see finding 6). Widget/golden tests for screens still open.
 4. **Pin `ffmpeg_kit_flutter_new`** to a concrete version.
 5. **Project persistence (SQLite)** — the biggest user-facing gap; projects vanish on app close. **Half-done**: pick up the `save` branch (see above) — rebase onto `main`, test on device, finish or prune.
 6. **Settings screen** — unlock AI provider config (OpenRouter key entry) instead of hardcoding Ollama in `main.dart`.
@@ -115,8 +116,14 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 
 ## 🧪 Testing Status
 
-- **Automated**: 1 smoke test (home screen renders, menu cards present) — passing.
-- **Manual (last verified January 2026)**: app launches on Android emulator; collage flow, freestyle editor, exports, slideshow creation, music playback, MP4 export all reported working.
+- **Automated**: 45 unit/widget tests — all passing, enforced by CI on every push/PR:
+  - `collage_engine_test.dart` — grid/masonry/template/freestyle geometry, bounds, uniqueness, `updateCell`, `assignImagesToLayout` (incl. stale-imageId regression)
+  - `slideshow_engine_test.dart` — creation defaults, durations, transitions, reorder/remove, music add/**remove regression**, formatters
+  - `models_test.dart` — copyWith semantics (incl. sentinel null-clearing), JSON roundtrips, defaults, unknown-enum fallback
+  - `photo_filter_test.dart` — type mapping, color matrix presence, metadata
+  - `music_library_test.dart` — 3 registered tracks, asset files exist on disk, CC BY attribution
+  - `widget_test.dart` — home screen smoke test
+- **Manual (last verified September 2026)**: first `flutter run` verified on Pixel 7; earlier flows (collage, freestyle, exports, slideshow, music, MP4 export) last verified January 2026.
 
 ## 📝 Known Issues
 

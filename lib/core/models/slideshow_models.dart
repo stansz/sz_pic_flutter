@@ -24,6 +24,9 @@ enum TransitionType {
   kenBurns, // Pan and zoom effect
 }
 
+/// Sentinel for copyWith nullable-field clearing (removeMusic assigns null).
+const Object _musicSentinel = Object();
+
 /// Represents a transition effect configuration
 class TransitionEffect extends Equatable {
   final TransitionType type;
@@ -163,7 +166,7 @@ class SlideshowProject extends Equatable {
     String? id,
     String? name,
     List<Slide>? slides,
-    String? musicPath,
+    Object? musicPath = _musicSentinel,
     DateTime? createdAt,
     DateTime? updatedAt,
     String? thumbnailPath,
@@ -173,7 +176,7 @@ class SlideshowProject extends Equatable {
       id: id ?? this.id,
       name: name ?? this.name,
       slides: slides ?? this.slides,
-      musicPath: musicPath ?? this.musicPath,
+      musicPath: identical(musicPath, _musicSentinel) ? this.musicPath : musicPath as String?,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       thumbnailPath: thumbnailPath ?? this.thumbnailPath,
