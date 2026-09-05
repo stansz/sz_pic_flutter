@@ -68,7 +68,7 @@ dependencies:
   
   # Video/Export (for slideshows)
   video_player: ^2.8.2
-  ffmpeg_kit_flutter_new: any
+  ffmpeg_kit_flutter_new: ^4.1.0
   
   # Utilities
   uuid: ^4.3.3

@@ -95,7 +95,7 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 - **No test coverage**: single smoke test. Models and engines (CollageEngine, SlideshowEngine, export helpers) are pure logic — easy wins for unit tests.
 - **No CI**: no GitHub Actions workflow running analyze/test on PRs.
 - **Placeholder Android ID**: `com.example.sz_pic_flutter` in `android/app/build.gradle(.kts)` — must change before any store release.
-- **Unpinned dependency**: `ffmpeg_kit_flutter_new: any` in pubspec (lock currently resolves 4.1.0) — pin it for reproducible builds. 76 packages have newer versions; nothing currently blocking.
+- ~~**Unpinned dependency**: `ffmpeg_kit_flutter_new: any`~~ — **pinned to `^4.1.0` (Sep 2026)**, matching the lock exactly (native `ffmpeg-kit-full-gpl:2.1.0`). Note: upstream 4.4.1+ fixes CVE-2026-8461 (MagicYUV decoder heap overflow, CVSS 8.8) — low practical risk here (app only encodes self-rendered PNG frames) but upgrade to 4.6.x deliberately with a device test of MP4 export when convenient. 76 packages have newer versions; nothing currently blocking.
 - **Docs drift (fixed in this review)**: `PROJECT_UPDATE.md` was corrupted (single line of literal `\n` escapes) and claimed MIT license (actual: GPL-3.0); roadmaps predated the slideshow/photo editor work.
 
 ---
@@ -105,7 +105,7 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 1. ~~**Set up CI**~~ ✅ **Done (Sep 2026)** — GitHub Actions runs analyze + test on push/PR and auto-deploys the web build to GitHub Pages on `main`.
 2. ~~**Fix review findings 2–5**~~ — findings 2–4 ✅ fixed Sep 2026 (all analyzer warnings cleared; CI enforces zero warnings). Remaining: item 5 (unused MP3 assets).
 3. ~~**Add unit tests**~~ ✅ **Done (Sep 2026)** — 45 tests across `collage_engine`, `slideshow_engine`, models (JSON roundtrips, copyWith semantics), `photo_filter`, and `music_library` (incl. asset-existence guard). Writing them surfaced and fixed two real copyWith bugs (see finding 6). Widget/golden tests for screens still open.
-4. **Pin `ffmpeg_kit_flutter_new`** to a concrete version.
+4. ~~**Pin `ffmpeg_kit_flutter_new`**~~ ✅ **Done (Sep 2026)** — pinned to `^4.1.0` (lock-identical). Upgrading to 4.6.x (CVE fix, FFmpeg 8.1.2) remains optional-but-wise — requires a device MP4-export test.
 5. **Project persistence (SQLite)** — the biggest user-facing gap; projects vanish on app close. **Half-done**: pick up the `save` branch (see above) — rebase onto `main`, test on device, finish or prune.
 6. **Settings screen** — unlock AI provider config (OpenRouter key entry) instead of hardcoding Ollama in `main.dart`.
 7. **Refactor the two monolith screens** into controllers + widgets before the next feature push.
