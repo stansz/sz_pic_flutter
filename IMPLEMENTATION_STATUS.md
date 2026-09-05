@@ -14,9 +14,9 @@
 | `flutter test` | ✅ 1/1 passing (smoke test fixed in this review) |
 | Secrets scan (code + full git history) | ✅ Clean |
 | Windows desktop build | ⚠️ Not supported — several plugins (`just_audio`, `sqflite`, `permission_handler`) have no/poor Windows support. Target platforms are **Android** and **Web**. |
-| CI | ❌ None (no GitHub Actions workflows) |
+| CI | ✅ GitHub Actions — analyze + test on push/PR, web deploy to Pages on `main` (`.github/workflows/web-deploy.yml`) |
 
-Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January 2026.
+Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January 2026. Web deployment is now automatic: every push to `main` builds and publishes https://stansz.github.io/sz_pic_flutter/ (the older Netlify URL is a stale manual deploy).
 
 ---
 
@@ -100,14 +100,14 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 
 ## 🎯 Recommended Next Steps (priority order)
 
-1. **Set up CI** — GitHub Actions: `flutter analyze` + `flutter test` on push/PR. Cheap and prevents the drift that built up over 8 months.
+1. ~~**Set up CI**~~ ✅ **Done (Sep 2026)** — GitHub Actions runs analyze + test on push/PR and auto-deploys the web build to GitHub Pages on `main`.
 2. **Fix review findings 2–5** — small diffs, removes all analyzer warnings.
 3. **Add unit tests** for `CollageEngine`, `SlideshowEngine`, models, and export helpers.
 4. **Pin `ffmpeg_kit_flutter_new`** to a concrete version.
 5. **Project persistence (SQLite)** — the biggest user-facing gap; projects vanish on app close. **Half-done**: pick up the `save` branch (see above) — rebase onto `main`, test on device, finish or prune.
 6. **Settings screen** — unlock AI provider config (OpenRouter key entry) instead of hardcoding Ollama in `main.dart`.
 7. **Refactor the two monolith screens** into controllers + widgets before the next feature push.
-8. **Redeploy web** (https://szpic.netlify.app/) from current `main`.
+8. ~~**Redeploy web**~~ ✅ Automatic now — every push to `main` publishes to GitHub Pages. (The Netlify site is legacy; take it down or leave it as a stale snapshot.)
 9. Fix the home "Edit Photo" card subtitle — it still advertises film grain, which was replaced by the filter system in January 2026.
 
 ---

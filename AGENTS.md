@@ -61,8 +61,15 @@ flutter build web
 ## Known structural issues
 
 - `slideshow_editor_screen.dart` (~1,600 lines) and `freestyle_editor_screen.dart` (~1,400 lines) are monoliths — extract controllers before adding features
-- Test coverage is one smoke test; no CI yet
+- Test coverage is one smoke test (CI runs it on every push/PR)
 - ~40 `use_build_context_synchronously` infos and deprecated `withOpacity` calls remain — prefer `withValues()` in new code
+
+## CI & deployment
+
+- `.github/workflows/web-deploy.yml` runs `flutter analyze` + `flutter test` on every push/PR (pinned to Flutter 3.38.7)
+- Pushes to `main` additionally build the web app (`--base-href /sz_pic_flutter/` — required for the project-pages subpath, don't drop it) and deploy to https://stansz.github.io/sz_pic_flutter/
+- The old https://szpic.netlify.app/ is a stale manual deploy — GitHub Pages is canonical now
+- Keep CI green; `flutter analyze` must stay at 0 errors (warnings/infos currently tolerated)
 
 ## When you change things
 

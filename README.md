@@ -1,7 +1,8 @@
 # SZ Picture Create - AI-Powered Collage & Slideshow Creator
 
-Web Version: 
-https://szpic.netlify.app/
+Web Version:
+https://stansz.github.io/sz_pic_flutter/
+(auto-deployed from `main` on every push via GitHub Actions)
 
 <div align="center">
 
