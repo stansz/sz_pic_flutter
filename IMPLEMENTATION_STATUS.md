@@ -12,6 +12,7 @@
 | `flutter pub get` | ✅ Works (Flutter 3.38.7 stable / Dart 3.10.7) |
 | `flutter analyze` | ✅ 0 errors · 0 warnings · 51 infos (warnings fixed Sep 2026 to keep CI green — `flutter analyze` exits non-zero on warnings) |
 | `flutter test` | ✅ 1/1 passing (smoke test fixed in this review) |
+| Android device run | ✅ First `flutter run` verified on Pixel 7 (Sep 2026) — build, install, launch all working |
 | Secrets scan (code + full git history) | ✅ Clean |
 | Windows desktop build | ⚠️ Not supported — several plugins (`just_audio`, `sqflite`, `permission_handler`) have no/poor Windows support. Target platforms are **Android** and **Web**. |
 | CI | ✅ GitHub Actions — analyze + test on push/PR, web deploy to Pages on `main` (`.github/workflows/web-deploy.yml`) |
