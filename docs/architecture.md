@@ -1,5 +1,7 @@
 # Architecture
 
+> Migrated September 2026 from `.kilocode/rules/memory-bank/architecture.md` (Kilo Code memory bank).
+> Accurate as of January 2026 — last verified against code during the September 2026 review.
 ## Overview
 
 SZ Pic follows **Clean Architecture** principles with a feature-based organization. The architecture separates concerns into three main layers: Presentation (UI), Domain (Business Logic), and Data (Models).

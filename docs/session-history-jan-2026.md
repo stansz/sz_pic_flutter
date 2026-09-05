@@ -1,5 +1,8 @@
-# Current Context
+# Session History — January 2026
 
+> Migrated September 2026 from `.kilocode/rules/memory-bank/context.md` (Kilo Code memory bank).
+> Verbatim session log from the final development push (last commit Jan 20, 2026).
+> Valuable for debugging context: ProGuard/Android 14 fixes, video export pipeline, dissolve removal.
 ## Project Status
 **Version**: 1.0.0-alpha
 **Last Updated**: January 18, 2026

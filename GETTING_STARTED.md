@@ -68,9 +68,9 @@ Provider<AIProvider>(
 
 ### Create a Slideshow
 1. Tap **Create Slideshow**, select images
-2. Arrange slides, set durations and transitions (fade, slide, zoom, dissolve, Ken Burns)
-3. Optionally add background music (3 bundled CC-BY tracks) with volume control
-4. Export as MP4 video, PNG sequence, or project JSON
+2. Arrange slides, set durations and transitions (fade, slide, zoom, Ken Burns)
+3. Optionally add background music (3 bundled CC-BY tracks) with volume control — native only, disabled on web
+4. Export as MP4 video, PNG sequence, or project JSON — export is hidden on web builds
 
 ### Edit a Photo
 1. Tap **Edit Photo**, select an image
@@ -117,8 +117,10 @@ lib/
 ## Next Steps
 
 - Review [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for the current state, review findings, and prioritized next steps
-- [`planning/ARCHITECTURE.md`](planning/ARCHITECTURE.md) for technical architecture
-- [`plans/`](plans/) holds feature plans (film grain, auto-save, photo editor redesign, juxtapose integration)
+- [`AGENTS.md`](AGENTS.md) — instructions for AI coding agents (conventions, gotchas, commands)
+- [`docs/architecture.md`](docs/architecture.md) — accurate architecture reference; [`docs/tech-stack.md`](docs/tech-stack.md) — dependency notes
+- [`docs/session-history-jan-2026.md`](docs/session-history-jan-2026.md) — detailed change history and debugging notes
+- [`planning/ARCHITECTURE.md`](planning/ARCHITECTURE.md) — original (partially stale) pre-implementation architecture
 
 ---
 

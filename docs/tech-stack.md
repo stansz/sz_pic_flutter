@@ -1,5 +1,8 @@
 # Technology Stack
 
+> Migrated September 2026 from `.kilocode/rules/memory-bank/tech.md` (Kilo Code memory bank).
+> Accurate as of January 2026. Note: paths reference the original dev machine
+> (`C:/Users/sz/AndroidStudioProjects/sz_pic_flutter`); the repo now lives wherever you cloned it.
 ## Core Framework
 
 ### Flutter

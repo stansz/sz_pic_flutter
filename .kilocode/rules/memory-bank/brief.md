@@ -1,1 +1,0 @@
-Building a cross-platform application that combines powerful collage and slideshow creation tools with AI-driven creative recommendations using Flutter for seamless performance and experience across Android, iOS, and web platforms

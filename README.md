@@ -83,7 +83,7 @@ The web version at https://szpic.netlify.app/ may lag behind `main` — redeploy
 ## 🗺️ Roadmap
 
 - ✅ Web deployment (https://szpic.netlify.app/) — basic functionality
-- ⏳ Film grain photo effects (planned, see `plans/film-grain-feature.md` — not yet implemented)
+- ⏳ Fix "Edit Photo" home-card copy (still advertises film grain, which was replaced by the GPU filter system in Jan 2026)
 - ⏳ Cloud storage
 - ⏳ Social sharing
 - ⏳ iOS support

@@ -48,22 +48,22 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 ### Collage Creator (`screens/collage/`)
 - Layout selection with previews (Grid, Masonry, Template, Freestyle)
 - Background color picker (20 presets + custom HSV), aspect ratio, spacing controls
-- Freestyle editor: drag, resize, rotate, layer management, shuffle/reset
+- Freestyle editor: drag, resize, rotate, layer management, shuffle/reset, plus free-crop mode (pan/zoom image within a cell via full-screen crop dialog)
 - PNG/JPEG export via RepaintBoundary (3x pixel ratio), user-selected save location
 
 ### Slideshow Creator (`screens/slideshow/`)
 - Timeline-based editor with preview playback
-- Transitions: fade, slide, zoom, dissolve, Ken Burns
-- Background music: 3 wired royalty-free tracks (Kevin MacLeod, CC BY 3.0), volume control, preview, auto fade-in/out
-- Export: MP4 video (ffmpeg_kit_flutter_new), PNG sequence, project JSON
+- Transitions: fade, slide, zoom, Ken Burns (the `dissolve` enum value is hidden from UI — kept only to sanitize legacy saved projects)
+- Background music: 3 wired royalty-free tracks (Kevin MacLeod, CC BY 3.0), volume control, preview, auto fade-in/out — **native only** (no `just_audio` on web)
+- Export: MP4 video (ffmpeg_kit_flutter_new), PNG sequence, project JSON — **export button hidden on web**
 
 ## 🚧 Partial / Inactive
 
-- **AI integration** — `OllamaProvider` (default, wired in `main.dart`) and `OpenRouterProvider` (exists, unwired). Layout suggestions + color analysis implemented at service level, but there is **no settings UI** and the collage creator's "Apply AI layout" is a TODO stub (`collage_creator_screen.dart:139`). README correctly marks AI as unavailable.
+- **AI integration** — `OllamaProvider` (default, wired in `main.dart`) and `OpenRouterProvider` (exists, unwired). Layout suggestions + color analysis implemented at service level but **never tested end-to-end**; there is **no settings UI** and the collage creator's "Apply AI layout" is a TODO stub (`collage_creator_screen.dart:139`). README correctly marks AI as unavailable.
 
 ## ⏳ Planned
 
-- Film grain effects — plan exists (`plans/film-grain-feature.md`); **not implemented** (no grain code in `lib/`). Note: home screen "Edit Photo" card subtitle already says "Apply film grain and effects" — update it or ship the feature.
+- Film grain effects — **history**: implemented January 2026, then deliberately replaced by the GPU-accelerated `ColorFiltered` filter system (all film-grain files removed — see `docs/session-history-jan-2026.md`). The home screen "Edit Photo" card subtitle still says "Apply film grain and effects" — fix the copy; only revisit grain if done GPU-side. `plans/film-grain-feature.md` is the old plan.
 - Project persistence (SQLite), project gallery, save/load between sessions
 - Settings screen (AI provider config, API keys, export quality, theme)
 - Drag-and-drop cell editing for grid/masonry/template layouts
@@ -91,7 +91,7 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 - **No test coverage**: single smoke test. Models and engines (CollageEngine, SlideshowEngine, export helpers) are pure logic — easy wins for unit tests.
 - **No CI**: no GitHub Actions workflow running analyze/test on PRs.
 - **Placeholder Android ID**: `com.example.sz_pic_flutter` in `android/app/build.gradle(.kts)` — must change before any store release.
-- **Unpinned dependency**: `ffmpeg_kit_flutter_new: any` — pin a version for reproducible builds. 76 packages have newer versions; nothing currently blocking.
+- **Unpinned dependency**: `ffmpeg_kit_flutter_new: any` in pubspec (lock currently resolves 4.1.0) — pin it for reproducible builds. 76 packages have newer versions; nothing currently blocking.
 - **Docs drift (fixed in this review)**: `PROJECT_UPDATE.md` was corrupted (single line of literal `\n` escapes) and claimed MIT license (actual: GPL-3.0); roadmaps predated the slideshow/photo editor work.
 
 ---
@@ -106,7 +106,7 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 6. **Settings screen** — unlock AI provider config (OpenRouter key entry) instead of hardcoding Ollama in `main.dart`.
 7. **Refactor the two monolith screens** into controllers + widgets before the next feature push.
 8. **Redeploy web** (https://szpic.netlify.app/) from current `main`.
-9. Decide film grain: implement the plan or fix the home card subtitle.
+9. Fix the home "Edit Photo" card subtitle — it still advertises film grain, which was replaced by the filter system in January 2026.
 
 ---
 

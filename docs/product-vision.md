@@ -1,5 +1,7 @@
 # Product Vision
 
+> Migrated September 2026 from `.kilocode/rules/memory-bank/product.md` (Kilo Code memory bank).
+> Phase checkboxes reflect January 2026 state.
 ## Why This Exists
 
 SZ Pic is a cross-platform creative tool that democratizes professional-grade collage and slideshow creation. The project addresses the gap between simple photo grid apps and complex professional design software by offering:

@@ -13,7 +13,9 @@ Full review performed on a Windows 11 machine (Flutter 3.38.7 stable / Dart 3.10
 - ✅ `flutter pub get`, `flutter analyze` (0 errors), secrets scan all clean
 - ✅ Fixed stale smoke test — home screen texts had changed ("SZ Picture Create" / three cards; `My Projects` and `Settings` cards removed in favor of `Edit Photo`)
 - ✅ Rebuilt this file, refreshed `README.md`, `IMPLEMENTATION_STATUS.md`, `GETTING_STARTED.md`
-- Findings and prioritized next steps recorded in [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) (key items: no CI, minimal tests, monolith screens, placeholder Android applicationId, unpinned `ffmpeg_kit_flutter_new`, film grain planned but not implemented)
+- ✅ Migrated Kilo Code memory bank (`.kilocode/rules/memory-bank/`) → root `AGENTS.md` (agent instructions) + `docs/` (architecture, tech-stack, product-vision, session-history); `.kilocode/` removed
+- Memory-bank corrections applied to docs: dissolve transition hidden from UI; web audio/slideshow-export disabled; film grain was implemented then replaced by GPU filters; ffmpeg lock resolves 4.1.0
+- Findings and prioritized next steps recorded in [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) (key items: no CI, minimal tests, monolith screens, placeholder Android applicationId, unpinned `ffmpeg_kit_flutter_new`, stale "film grain" home-card copy)
 
 ---
 
