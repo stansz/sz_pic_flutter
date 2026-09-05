@@ -20,6 +20,8 @@ import 'core/services/collage_engine.dart';
 import 'core/services/slideshow_engine.dart';
 import 'core/services/ai_provider.dart';
 import 'core/services/ollama_provider.dart';
+import 'core/services/project_repository.dart';
+import 'core/services/auto_save_service.dart';
 import 'core/models/ai_models.dart';
 
 void main() {
@@ -46,6 +48,15 @@ class SZPicApp extends StatelessWidget {
         ),
         Provider<SlideshowEngine>(
           create: (_) => SlideshowEngine(),
+        ),
+        Provider<ProjectRepository>(
+          create: (_) => ProjectRepository()..initialize(),
+        ),
+        ChangeNotifierProxyProvider<ProjectRepository, AutoSaveService>(
+          create: (context) => AutoSaveService(),
+          update: (context, repository, autoSaveService) {
+            return autoSaveService ?? AutoSaveService();
+          },
         ),
       ],
       child: MaterialApp(

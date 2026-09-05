@@ -15,9 +15,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/services/image_picker_service.dart';
+import '../core/services/project_repository.dart';
 import '../core/widgets/loading_dialog.dart';
+import '../core/widgets/recent_projects_widget.dart';
+import '../core/models/project.dart';
+import '../core/models/collage_models.dart';
+import '../core/models/slideshow_models.dart';
+import '../core/models/image_item.dart';
 import 'collage/collage_creator_screen.dart';
+import 'collage/collage_editor_screen.dart';
 import 'slideshow/slideshow_creator_screen.dart';
+import 'slideshow/slideshow_editor_screen.dart';
 import 'photo_editor/photo_editor_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,8 +35,50 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _isLoading = false;
+  List<Project> _recentProjects = [];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _loadRecentProjects();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Reload drafts when app is resumed (e.g., returning from editor)
+    if (state == AppLifecycleState.resumed) {
+      _loadRecentProjects();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  Future<void> _loadRecentProjects() async {
+    try {
+      debugPrint('=== HomeScreen: Loading recent projects ===');
+      final repo = context.read<ProjectRepository>();
+      final projects = await repo.getDrafts();
+      debugPrint('=== HomeScreen: Loaded ${projects.length} draft(s) ===');
+      if (mounted) {
+        setState(() {
+          _recentProjects = projects.take(10).toList();
+        });
+        debugPrint('=== HomeScreen: Updated state with ${_recentProjects.length} projects ===');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('=== HomeScreen: Error loading recent projects ===');
+      debugPrint('Error: $e');
+      debugPrint('Stack trace: $stackTrace');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +136,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              
+               
+              // Recent Projects Widget
+              RecentProjectsWidget(
+                projects: _recentProjects,
+                onProjectTap: _onProjectTap,
+                onClearAll: _clearAllDrafts,
+              ),
+               
               // Main Menu Cards
               Expanded(
                 child: SingleChildScrollView(
@@ -367,6 +424,95 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _onProjectTap(Project project) async {
+    debugPrint('=== _onProjectTap: Loading project ===');
+    debugPrint('Project ID: ${project.id}');
+    debugPrint('Project name: ${project.name}');
+    debugPrint('Project type: ${project.type}');
+    debugPrint('Project data keys: ${project.data.keys}');
+    
+    try {
+      switch (project.type) {
+        case ProjectType.collage:
+          await _loadCollageProject(project);
+          break;
+        case ProjectType.slideshow:
+          await _loadSlideshowProject(project);
+          break;
+        case ProjectType.photo:
+          await _loadPhotoProject(project);
+          break;
+      }
+    } catch (e, stackTrace) {
+      debugPrint('=== _onProjectTap: Error loading project ===');
+      debugPrint('Error: $e');
+      debugPrint('Stack trace: $stackTrace');
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load project: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _clearAllDrafts() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear All Drafts'),
+        content: const Text(
+          'Are you sure you want to delete all draft projects? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              'Delete All',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        final repo = context.read<ProjectRepository>();
+        await repo.deleteAllDrafts();
+        setState(() {
+          _recentProjects = [];
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('All drafts deleted'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error deleting drafts: ${e.toString()}'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    }
+  }
+
   void _showComingSoon(BuildContext context, String feature) {
     showDialog(
       context: context,
@@ -381,6 +527,93 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _loadCollageProject(Project project) async {
+    debugPrint('=== Loading collage project ===');
+    debugPrint('Project data: ${project.data}');
+    
+    // Deserialize layout and images from project.data
+    final layoutJson = project.data['layout'] as Map<String, dynamic>;
+    final imagesJson = project.data['images'] as List;
+    
+    debugPrint('Layout JSON: $layoutJson');
+    debugPrint('Images JSON count: ${imagesJson.length}');
+    
+    // Import models
+    final layout = CollageLayout.fromJson(layoutJson);
+    final images = imagesJson
+        .map((img) => ImageItem.fromJson(img as Map<String, dynamic>))
+        .toList();
+    
+    debugPrint('Loaded layout with ${layout.cells.length} cells');
+    debugPrint('Loaded ${images.length} images');
+    
+    // Navigate to collage editor
+    if (mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => CollageEditorScreen(
+            layout: layout,
+            images: images,
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _loadSlideshowProject(Project project) async {
+    debugPrint('=== Loading slideshow project ===');
+    debugPrint('Project data: ${project.data}');
+    
+    // Deserialize SlideshowProject from project.data
+    final slideshowProject = SlideshowProject.fromJson(project.data);
+    
+    debugPrint('Loaded slideshow with ${slideshowProject.slides.length} slides');
+    debugPrint('Total duration: ${slideshowProject.totalDuration}');
+    debugPrint('Music path: ${slideshowProject.musicPath}');
+    
+    // Navigate to slideshow editor
+    if (mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => SlideshowEditorScreen(
+            project: slideshowProject,
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _loadPhotoProject(Project project) async {
+    debugPrint('=== Loading photo project ===');
+    debugPrint('Project data: ${project.data}');
+    
+    // Deserialize PhotoEditData from project.data
+    final photoEditData = PhotoEditData.fromJson(project.data);
+    
+    debugPrint('Photo edit data imageId: ${photoEditData.imageId}');
+    debugPrint('Photo edit data imagePath: ${photoEditData.imagePath}');
+    debugPrint('Photo edit data filter: ${photoEditData.filter}');
+    
+    // Create ImageItem from photo data
+    final image = ImageItem(
+      id: photoEditData.imageId,
+      path: photoEditData.imagePath,
+      name: 'Edited Photo',
+      addedAt: DateTime.now(),
+    );
+    
+    debugPrint('Created ImageItem: ${image.path}');
+    
+    // Navigate to photo editor
+    if (mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => PhotoEditorScreen(image: image),
+        ),
+      );
+    }
   }
 }
 

@@ -21,9 +21,15 @@ import 'package:flutter/rendering.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:image/image.dart' as img;
+import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 import '../../core/models/image_item.dart';
 import '../../core/models/collage_models.dart';
+import '../../core/models/project.dart';
 import '../../core/services/collage_engine.dart';
+import '../../core/services/project_repository.dart';
+import '../../core/services/auto_save_service.dart';
+import '../../core/services/thumbnail_generator.dart';
 import '../../core/utils/export_helper.dart';
 import '../../core/widgets/color_picker_dialog.dart';
 
@@ -54,11 +60,95 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
   final GlobalKey _collageKey = GlobalKey();
   bool _isExporting = false;
   final CollageEngine _engine = CollageEngine();
+  late String _projectId;
+  late AutoSaveService _autoSaveService;
+  int _autoSaveVersion = 0;
+  DateTime? _projectCreatedAt;
 
   @override
   void initState() {
     super.initState();
+    _projectId = const Uuid().v4();
     _currentLayout = widget.layout;
+    _projectCreatedAt = DateTime.now(); // Set initial creation time
+    _autoSaveService = context.read<AutoSaveService>();
+    
+    // Start auto-save
+    _autoSaveService.startAutoSave(
+      projectId: _projectId,
+      type: ProjectType.collage,
+      saveCallback: _saveCurrentState,
+    );
+  }
+
+  @override
+  void dispose() {
+    _autoSaveService.stopAutoSave();
+    super.dispose();
+  }
+
+  Future<void> _saveCurrentState() async {
+    try {
+      debugPrint('=== Saving collage project ===');
+      final repo = context.read<ProjectRepository>();
+      
+      // Generate thumbnail
+      String? thumbnailPath;
+      try {
+        debugPrint('Generating thumbnail...');
+        thumbnailPath = await ThumbnailGenerator.generateCollageThumbnail(
+          _currentLayout,
+          widget.images,
+          _projectId,
+        );
+        debugPrint('Thumbnail generated: $thumbnailPath');
+      } catch (e) {
+        debugPrint('Error generating thumbnail: $e');
+      }
+      
+      // Save project
+      final project = Project(
+        id: _projectId,
+        name: 'Collage ${_projectCreatedAt.toString().substring(0, 10)}',
+        type: ProjectType.collage,
+        data: {
+          'layout': _currentLayout.toJson(),
+          'images': widget.images.map((img) => img.toJson()).toList(),
+        },
+        createdAt: _projectCreatedAt!,
+        updatedAt: DateTime.now(),
+        thumbnailPath: thumbnailPath,
+        isDraft: true,
+        autoSaveVersion: _autoSaveVersion,
+      );
+      
+      debugPrint('Saving project to database...');
+      await repo.saveProject(project);
+      _autoSaveVersion++;
+      debugPrint('Collage project saved successfully: $_projectId (version $_autoSaveVersion)');
+      
+      // Show save indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Draft saved'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Error saving collage project: $e');
+      debugPrint('Stack trace: $stackTrace');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save draft: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   ImageItem? _getImageForCell(LayoutCell cell) {
@@ -390,6 +480,13 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
             onPressed: _showColorPicker,
           ),
           IconButton(
+            icon: const Icon(Icons.save_as),
+            tooltip: 'Save Draft',
+            onPressed: () {
+              _autoSaveService.saveNow();
+            },
+          ),
+          IconButton(
             icon: _isExporting
                 ? const SizedBox(
                     width: 20,
@@ -482,17 +579,24 @@ class _CollageEditorScreenState extends State<CollageEditorScreen> {
                       _ControlButton(
                         icon: Icons.aspect_ratio,
                         label: 'Aspect',
-                        onPressed: _showAspectRatioPicker,
+                        onPressed: () {
+                          _autoSaveService.resetTimer();
+                          _showAspectRatioPicker();
+                        },
                       ),
                       _ControlButton(
                         icon: Icons.space_bar,
                         label: 'Spacing',
-                        onPressed: _showSpacingPicker,
+                        onPressed: () {
+                          _autoSaveService.resetTimer();
+                          _showSpacingPicker();
+                        },
                       ),
                       _ControlButton(
                         icon: Icons.shuffle,
                         label: 'Shuffle',
                         onPressed: () {
+                          _autoSaveService.resetTimer();
                           setState(() {
                             // Shuffle images in cells
                             final imageIds = _currentLayout.cells
