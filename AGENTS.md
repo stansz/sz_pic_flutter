@@ -6,7 +6,7 @@ Guidance for AI coding agents working in this repository.
 
 SZ Pic ("SZ Picture Create") — a Flutter app for creating collages, slideshows, and filtered photos. UI footer shows v0.5; pubspec version 1.0.0+1; status: alpha.
 
-- **Supported platforms**: Android (primary; dedicated Pixel 7 test device) and Web (https://szpic.netlify.app/)
+- **Supported platforms**: Android (primary; dedicated Pixel 7 test device) and Web (https://stansz.github.io/sz_pic_flutter/ — auto-deployed from `main`)
 - **Not supported**: iOS (unconfigured), desktop (`just_audio`, `sqflite`, `permission_handler` have no desktop implementations)
 - **License**: GPL-3.0 — required by FFmpeg Kit GPL libraries; source files carry license headers
 
@@ -32,7 +32,7 @@ SZ Pic ("SZ Picture Create") — a Flutter app for creating collages, slideshows
 ```bash
 flutter pub get
 flutter analyze --no-fatal-infos   # infos tolerated; errors+warnings fatal. Currently 51 infos, 0 warnings
-flutter test                         # smoke test must pass
+flutter test                         # 45 tests, all must pass
 flutter run                          # Android device/emulator
 flutter run -d chrome
 flutter build apk --release   # release build (R8 enabled)
@@ -42,6 +42,7 @@ flutter build web
 ## Conventions
 
 - **Models**: immutable, extend `Equatable`, `copyWith`, JSON serialization, UUID ids
+- **Nullable copyWith fields**: clearable fields (`LayoutCell.imageId`, `SlideshowProject.musicPath`) use a **sentinel** (`const Object()`) — assigning `null` must actually clear. Never "simplify" back to `?? this.x`; that pattern caused two shipped bugs (removeMusic no-op, stale image ids) and regression tests guard it
 - **Coordinates**: collage layouts use normalized 0–1 coordinates (resolution-independent); rotation in degrees, scale multiplier
 - **DI**: services (`CollageEngine`, `SlideshowEngine`, `ImagePickerService`, `AIProvider`) provided via `MultiProvider` in `main.dart`; screens use `setState` for local state
 - **Export**: capture via `RepaintBoundary.toImage(pixelRatio: 3.0)`; PNG internally, JPEG re-encode via `image` package (quality 92)

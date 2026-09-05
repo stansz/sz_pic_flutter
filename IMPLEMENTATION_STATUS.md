@@ -92,8 +92,8 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 
 ### Structural / maintenance
 - **Monolith screens**: `slideshow_editor_screen.dart` (1,615 lines) and `freestyle_editor_screen.dart` (1,428 lines) with raw `setState`. Extract controllers/sub-widgets before adding features.
-- **No test coverage**: single smoke test. Models and engines (CollageEngine, SlideshowEngine, export helpers) are pure logic — easy wins for unit tests.
-- **No CI**: no GitHub Actions workflow running analyze/test on PRs.
+- ~~**No test coverage**~~ — **fixed Sep 2026**: 45 unit/widget tests (engines, models, filters, music library) enforced by CI. Widget/golden tests for screens remain open.
+- ~~**No CI**~~ — **fixed Sep 2026**: GitHub Actions runs analyze + test on push/PR and deploys web to Pages on `main`.
 - **Placeholder Android ID**: `com.example.sz_pic_flutter` in `android/app/build.gradle(.kts)` — must change before any store release.
 - ~~**Unpinned dependency**: `ffmpeg_kit_flutter_new: any`~~ — **pinned to `^4.1.0` (Sep 2026)**, matching the lock exactly (native `ffmpeg-kit-full-gpl:2.1.0`). Note: upstream 4.4.1+ fixes CVE-2026-8461 (MagicYUV decoder heap overflow, CVSS 8.8) — low practical risk here (app only encodes self-rendered PNG frames) but upgrade to 4.6.x deliberately with a device test of MP4 export when convenient. 76 packages have newer versions; nothing currently blocking.
 - **Docs drift (fixed in this review)**: `PROJECT_UPDATE.md` was corrupted (single line of literal `\n` escapes) and claimed MIT license (actual: GPL-3.0); roadmaps predated the slideshow/photo editor work.

@@ -22,6 +22,7 @@ Full review performed on a Windows 11 machine (Flutter 3.38.7 stable / Dart 3.10
 - **Cleared all analyzer warnings** (11 → 0) to satisfy CI's zero-warning bar: fixed the `_writeFrameFile` onError type bug, removed dead `_showComingSoon`/`_isHardwareAccelerationLikely`, write-only `_activeCornerId` state, unused import/locals, and a needless `!`. Analyzer now 51 infos, 0 warnings; tests green
 - **First device run verified**: `flutter run` on the Pixel 7 — full build/install/launch cycle working (Impeller/Vulkan renderer). Web deploy pipeline verified live end-to-end across three pushes
 - **Unit test suite added (45 tests)**: engines, models, filters, music library. Writing them surfaced two real bugs — `removeMusic` was a no-op (`copyWith(musicPath: null)` fallback) and `LayoutCell.copyWith(imageId:)` kept stale ids — both fixed with sentinel-based copyWith and covered by regression tests
+- **Pinned `ffmpeg_kit_flutter_new` to `^4.1.0`** (lock-identical, zero diff): closes the silent-upgrade hazard; upgrade to 4.6.x documented as a deliberate, device-tested follow-up (CVE-2026-8461 fix). Also confirmed the ffmpeg origin story (original `flutter_ffmpeg` died with Arthenica's retirement + AGP 8 incompatibility; the Karpenko fork's full-gpl variant supplies libx264)
 - Findings and prioritized next steps recorded in [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) (key items: no CI, minimal tests, monolith screens, placeholder Android applicationId, unpinned `ffmpeg_kit_flutter_new`, stale "film grain" home-card copy)
 
 ---

@@ -73,17 +73,18 @@ SZ Picture Create is a cross-platform mobile application that combines powerful 
 
 ## 🩺 Current Status (September 2026)
 
-A full code review was completed in September 2026 (see [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for findings and next steps). Summary:
+Reviewed and refreshed September 2026 (details in [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md)):
 
-- ✅ `flutter pub get` / `flutter analyze` clean (0 errors) / `flutter test` green on Flutter 3.38.7
-- ✅ No secrets in code or git history
-- ⚠️ Test coverage is minimal (one smoke test); no CI; docs were stale and have been refreshed
+- ✅ CI: analyze + test on every push/PR; web auto-deploys to GitHub Pages from `main`
+- ✅ 45 unit/widget tests green; analyzer at 0 errors / 0 warnings
+- ✅ Verified on-device (Pixel 7, first run Sep 2026) and web; no secrets in code or git history
+- 🚧 Remaining: project persistence (WIP parked on `save` branch), settings screen, monolith screen refactors
 
-The web version at https://szpic.netlify.app/ may lag behind `main` — redeploy after pulling recent changes.
+The web version auto-deploys from `main` on every push (GitHub Actions) — no manual redeploy needed.
 
 ## 🗺️ Roadmap
 
-- ✅ Web deployment (https://szpic.netlify.app/) — basic functionality
+- ✅ Web deployment (https://stansz.github.io/sz_pic_flutter/) — auto-deployed from `main` via CI
 - ⏳ Fix "Edit Photo" home-card copy (still advertises film grain, which was replaced by the GPU filter system in Jan 2026)
 - ⏳ Cloud storage
 - ⏳ Social sharing

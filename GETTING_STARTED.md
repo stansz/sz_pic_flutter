@@ -24,7 +24,7 @@ cd sz_pic_flutter
 
 flutter pub get     # fetch dependencies
 flutter analyze     # should report 0 errors
-flutter test        # smoke test should pass
+flutter test         # 45 tests, all should pass
 
 flutter devices     # pick a target
 flutter run         # Android emulator/device
@@ -112,7 +112,7 @@ lib/
 ## Development Tips
 
 - `r` hot reload / `R` hot restart / `q` quit (while `flutter run` is attached)
-- `flutter analyze` before every commit; `flutter test` to run the smoke test
+- `flutter analyze` before every commit; `flutter test` runs the suite (45 tests)
 - Logs: `flutter logs` or the Run console
 
 ## Next Steps
