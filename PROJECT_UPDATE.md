@@ -15,6 +15,9 @@ Full review performed on a Windows 11 machine (Flutter 3.38.7 stable / Dart 3.10
 - ✅ Rebuilt this file, refreshed `README.md`, `IMPLEMENTATION_STATUS.md`, `GETTING_STARTED.md`
 - ✅ Migrated Kilo Code memory bank (`.kilocode/rules/memory-bank/`) → root `AGENTS.md` (agent instructions) + `docs/` (architecture, tech-stack, product-vision, session-history); `.kilocode/` removed
 - Memory-bank corrections applied to docs: dissolve transition hidden from UI; web audio/slideshow-export disabled; film grain was implemented then replaced by GPU filters; ffmpeg lock resolves 4.1.0
+- 🎁 **Rescued ~1,540 lines of uncommitted work** from the old `~/AndroidStudioProjects/sz_pic_flutter` machine copy: the auto-save/project-persistence feature (Project model, SQLite repository, AutoSaveService, ThumbnailGenerator, recent-projects UI) — pushed as the `save` branch (`3d6e52d`). Analyzer-clean, untested at runtime. This work was never logged in the old memory bank.
+- Dev environment rebuilt on Windows: Temurin JDK 21 installed (`flutter config --jdk-dir`), Android Studio removed (not required), SDK 36 verified doctor-green; Pixel 7 dedicated as test device
+- Repo relocated to `C:\Users\sz\Code\sz_pic_flutter` as the only working copy; old copy deleted after verifying clean tree / no stashes / all branches on GitHub
 - Findings and prioritized next steps recorded in [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) (key items: no CI, minimal tests, monolith screens, placeholder Android applicationId, unpinned `ffmpeg_kit_flutter_new`, stale "film grain" home-card copy)
 
 ---

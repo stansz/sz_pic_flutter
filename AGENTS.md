@@ -6,13 +6,22 @@ Guidance for AI coding agents working in this repository.
 
 SZ Pic ("SZ Picture Create") — a Flutter app for creating collages, slideshows, and filtered photos. UI footer shows v0.5; pubspec version 1.0.0+1; status: alpha.
 
-- **Supported platforms**: Android (primary, tested on Android 14 / Pixel 9a) and Web (https://szpic.netlify.app/)
+- **Supported platforms**: Android (primary; dedicated Pixel 7 test device) and Web (https://szpic.netlify.app/)
 - **Not supported**: iOS (unconfigured), desktop (`just_audio`, `sqflite`, `permission_handler` have no desktop implementations)
 - **License**: GPL-3.0 — required by FFmpeg Kit GPL libraries; source files carry license headers
+
+## Development environment (September 2026)
+
+- Windows 11, Flutter 3.38.7 stable, **no Android Studio** (deleted; not required)
+- JDK: Temurin 21 (`C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot`), wired via `flutter config --jdk-dir`
+- Android SDK at the Windows default `%LOCALAPPDATA%\Android\Sdk` (platform-tools, build-tools, licenses accepted)
+- Test device: Pixel 7 over USB debugging (`flutter run` targets it automatically when connected)
+- Working copy: `C:\Users\sz\Code\sz_pic_flutter` — the **only** local copy; old `~/AndroidStudioProjects` copy deleted after its uncommitted work was rescued
 
 ## Read first
 
 - `IMPLEMENTATION_STATUS.md` — current feature state, review findings, prioritized next steps (source of truth)
+- `save` branch — WIP auto-save/project-persistence feature (~1,540 lines, analyzer-clean, **untested at runtime**); based on `7255489`, needs rebase onto `main` before merging
 - `docs/architecture.md` — accurate architecture reference (models, services, screens, patterns)
 - `docs/session-history-jan-2026.md` — detailed change history incl. debugging sagas (ProGuard, video export, Android 14)
 - `planning/` — original pre-implementation plans; **partially stale** (aspirational packages/features), trust code over these

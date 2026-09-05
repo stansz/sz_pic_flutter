@@ -59,6 +59,8 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 
 ## 🚧 Partial / Inactive
 
+- **Auto-save & project persistence** — **WIP exists on the `save` branch** (commit `3d6e52d`): ~1,540 lines rescued in September 2026 from an old machine copy where it sat uncommitted and undocumented. Includes `Project` model, `ProjectRepository` (SQLite), `AutoSaveService`, `ThumbnailGenerator`, `RecentProjectsWidget`/`ProjectCard` home-screen UI, and collage-editor integration. Analyzer-clean (0 errors, 4 minor warnings) but **untested at runtime** — needs rebase onto `main`, review, and device testing. Implements `plans/auto-save-system.md`.
+
 - **AI integration** — `OllamaProvider` (default, wired in `main.dart`) and `OpenRouterProvider` (exists, unwired). Layout suggestions + color analysis implemented at service level but **never tested end-to-end**; there is **no settings UI** and the collage creator's "Apply AI layout" is a TODO stub (`collage_creator_screen.dart:139`). README correctly marks AI as unavailable.
 
 ## ⏳ Planned
@@ -102,7 +104,7 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 2. **Fix review findings 2–5** — small diffs, removes all analyzer warnings.
 3. **Add unit tests** for `CollageEngine`, `SlideshowEngine`, models, and export helpers.
 4. **Pin `ffmpeg_kit_flutter_new`** to a concrete version.
-5. **Project persistence (SQLite)** — the biggest user-facing gap; projects vanish on app close.
+5. **Project persistence (SQLite)** — the biggest user-facing gap; projects vanish on app close. **Half-done**: pick up the `save` branch (see above) — rebase onto `main`, test on device, finish or prune.
 6. **Settings screen** — unlock AI provider config (OpenRouter key entry) instead of hardcoding Ollama in `main.dart`.
 7. **Refactor the two monolith screens** into controllers + widgets before the next feature push.
 8. **Redeploy web** (https://szpic.netlify.app/) from current `main`.

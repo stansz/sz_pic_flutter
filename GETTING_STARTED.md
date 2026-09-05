@@ -7,8 +7,9 @@ This guide gets SZ Pic running on **Windows** or **macOS**. Verified September 2
 ## Prerequisites
 
 - Flutter SDK (stable channel) — [install guide](https://docs.flutter.dev/get-started/install)
-- Android Studio (or VS Code) with the Flutter plugin
-- Android SDK + an emulator or physical device
+- VS Code (or Android Studio) with the Flutter plugin — the IDE is your choice, neither is mandatory beyond the SDK
+- Android SDK + an emulator or a physical device with USB debugging
+- A JDK for Android/Gradle builds (e.g. [Temurin 21](https://adoptium.net); point Flutter at it with `flutter config --jdk-dir "<path>"`) — not needed for web-only work
 - For local AI features: [Ollama](https://ollama.com) (optional)
 
 ```bash
