@@ -49,15 +49,6 @@ String _getHardwareEncoder() {
   }
 }
 
-// Check if hardware acceleration is likely available
-bool _isHardwareAccelerationLikely() {
-  if (Platform.isIOS || Platform.isMacOS) {
-    return true; // VideoToolbox is always available on Apple devices
-  }
-  // On Android, hardware encoding availability varies
-  return true;
-}
-
 enum SlideshowExportFormat { pngSequence, video, projectFile }
 
 extension on SlideshowExportFormat {
@@ -1372,7 +1363,6 @@ try {
     });
     
     // Run transition animation and capture frames
-    final transitionDurationMs = transitionDuration.inMilliseconds;
     for (var i = 0; i < transitionFrames; i++) {
       final progress = (i / transitionFrames).clamp(0.0, 1.0);
       _transitionController.value = progress;
@@ -1557,10 +1547,12 @@ try {
 
   // Helper for parallel file writing - non-blocking
   void _writeFrameFile(File file, Uint8List bytes) {
-    file.writeAsBytes(bytes).catchError((e) {
-      debugPrint('[exportVideo] failed to write frame file: $e');
-      return null;
-    });
+    file.writeAsBytes(bytes).then(
+      (_) {},
+      onError: (Object e) {
+        debugPrint('[exportVideo] failed to write frame file: $e');
+      },
+    );
   }
 
   // Helper for updating progress dialog (avoids dialog recreation spam)

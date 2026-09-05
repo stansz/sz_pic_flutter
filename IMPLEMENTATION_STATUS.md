@@ -10,7 +10,7 @@
 | Check | Result |
 |---|---|
 | `flutter pub get` | ✅ Works (Flutter 3.38.7 stable / Dart 3.10.7) |
-| `flutter analyze` | ✅ 0 errors · 11 warnings · 51 infos |
+| `flutter analyze` | ✅ 0 errors · 0 warnings · 51 infos (warnings fixed Sep 2026 to keep CI green — `flutter analyze` exits non-zero on warnings) |
 | `flutter test` | ✅ 1/1 passing (smoke test fixed in this review) |
 | Secrets scan (code + full git history) | ✅ Clean |
 | Windows desktop build | ⚠️ Not supported — several plugins (`just_audio`, `sqflite`, `permission_handler`) have no/poor Windows support. Target platforms are **Android** and **Web**. |
@@ -78,9 +78,9 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 
 ### Bugs / quick fixes
 1. ~~Smoke test stale (expected old subtitle and removed menu cards)~~ — **fixed in this review**.
-2. `slideshow_editor_screen.dart:1562` — `onError` handler returns `Null` where `FutureOr<File>` is required (`invalid_return_type_for_catch_error`). Latent crash path during video export errors.
-3. `home_screen.dart:342` — unnecessary `!` on a non-nullable receiver (warning).
-4. Unused code: `_showComingSoon` and `_isHardwareAccelerationLikely` (dead elements), unused `dart:io` import in slideshow creator, unused local `transitionDurationMs`.
+2. ~~`slideshow_editor_screen.dart:1562` — `onError` handler returns `Null` where `FutureOr<File>` is required~~ — **fixed Sep 2026** (rewritten as `.then(_, onError:)`).
+3. ~~`home_screen.dart:342` — unnecessary `!` on a non-nullable receiver~~ — **fixed Sep 2026**.
+4. ~~Unused code: `_showComingSoon`, `_isHardwareAccelerationLikely`, unused `dart:io` import, unused local `transitionDurationMs`~~ — **all removed Sep 2026**, plus write-only `_activeCornerId` field and its 6 assignments, unused locals in `web_image_comparison.dart` and the freestyle free-crop handler.
 5. 3 unused MP3 assets in `assets/music/` (`acoustic_porch_swing_days`, `cinematic_rains_will_fall`, + 1 more on disk than registered in `MusicLibrary`) — either wire them up or remove them from the bundle.
 
 ### Analyzer noise (51 infos)
@@ -101,7 +101,7 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 ## 🎯 Recommended Next Steps (priority order)
 
 1. ~~**Set up CI**~~ ✅ **Done (Sep 2026)** — GitHub Actions runs analyze + test on push/PR and auto-deploys the web build to GitHub Pages on `main`.
-2. **Fix review findings 2–5** — small diffs, removes all analyzer warnings.
+2. ~~**Fix review findings 2–5**~~ — findings 2–4 ✅ fixed Sep 2026 (all analyzer warnings cleared; CI enforces zero warnings). Remaining: item 5 (unused MP3 assets).
 3. **Add unit tests** for `CollageEngine`, `SlideshowEngine`, models, and export helpers.
 4. **Pin `ffmpeg_kit_flutter_new`** to a concrete version.
 5. **Project persistence (SQLite)** — the biggest user-facing gap; projects vanish on app close. **Half-done**: pick up the `save` branch (see above) — rebase onto `main`, test on device, finish or prune.

@@ -139,8 +139,6 @@ class _WebImageComparisonState extends State<WebImageComparison> {
   }
 
   Widget _buildImage(String imagePath) {
-    final isDataUrl = imagePath.startsWith('data:');
-    
     // For web, use NetworkImage for data URLs
     // For file paths, also use NetworkImage (shouldn't happen on web)
     final imageProvider = NetworkImage(imagePath);

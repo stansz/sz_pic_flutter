@@ -19,6 +19,7 @@ Full review performed on a Windows 11 machine (Flutter 3.38.7 stable / Dart 3.10
 - Dev environment rebuilt on Windows: Temurin JDK 21 installed (`flutter config --jdk-dir`), Android Studio removed (not required), SDK 36 verified doctor-green; Pixel 7 dedicated as test device
 - Repo relocated to `C:\Users\sz\Code\sz_pic_flutter` as the only working copy; old copy deleted after verifying clean tree / no stashes / all branches on GitHub
 - **CI + web hosting**: added `.github/workflows/web-deploy.yml` (analyze + test on push/PR; Flutter web build deployed to GitHub Pages on `main`) and enabled Pages via the API. Live at https://stansz.github.io/sz_pic_flutter/ — replaces the stale manual Netlify deploy
+- **Cleared all analyzer warnings** (11 → 0) to satisfy CI's zero-warning bar: fixed the `_writeFrameFile` onError type bug, removed dead `_showComingSoon`/`_isHardwareAccelerationLikely`, write-only `_activeCornerId` state, unused import/locals, and a needless `!`. Analyzer now 51 infos, 0 warnings; tests green
 - Findings and prioritized next steps recorded in [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) (key items: no CI, minimal tests, monolith screens, placeholder Android applicationId, unpinned `ffmpeg_kit_flutter_new`, stale "film grain" home-card copy)
 
 ---

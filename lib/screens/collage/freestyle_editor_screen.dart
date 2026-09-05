@@ -60,7 +60,6 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
   Size? _cellStartSize;
   bool _isInFreeCropMode = false;
   Offset? _freeCropStartOffset;
-  String? _activeCornerId;
   double? _originalCellWidth;
   double? _originalCellHeight;
   double? _originalCellX;
@@ -369,7 +368,6 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
           _currentLayout = _currentLayout.copyWith(cells: updatedCells);
           _isInFreeCropMode = false;
           _freeCropStartOffset = null;
-          _activeCornerId = null;
           // Keep original dimensions stored? We'll keep them for future re-entry? Reset to null.
           _originalCellWidth = null;
           _originalCellHeight = null;
@@ -382,7 +380,6 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
     setState(() {
       _isInFreeCropMode = false;
       _freeCropStartOffset = null;
-      _activeCornerId = null;
     });
   }
 
@@ -551,7 +548,6 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
                                       setState(() {
                                         if (_isInFreeCropMode) {
                                           _freeCropStartOffset = null;
-                                          _activeCornerId = null;
                                         } else {
                                           _dragStartOffset = null;
                                           _cellStartOffset = null;
@@ -561,7 +557,6 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
                                     onResizeStart: (details, cornerId) {
                                       setState(() {
                                         _selectedCellId = cell.id;
-                                        _activeCornerId = cornerId;
                                         _dragStartOffset = details.globalPosition;
                                         _resizeStartDistance = details.globalPosition.distance;
                                         _cellStartSize = Size(
@@ -578,12 +573,6 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
                                       if (_dragStartOffset != null && _cellStartSize != null && _freeCropStartOffset != null) {
                                         if (_isInFreeCropMode && _selectedCellId == cell.id) {
                                           // Free crop mode: resize image with corner
-                                          final currentDistance = details.globalPosition.distance;
-                                          final scaleDelta = currentDistance / (_resizeStartDistance ?? 1.0);
-                                          
-                                          // Calculate new scale based on corner drag
-                                          final cellCenterX = cell.width * canvasSize.width / 2;
-                                          final cellCenterY = cell.height * canvasSize.height / 2;
                                           final dragVector = details.globalPosition - _dragStartOffset!;
                                           
                                           // Adjust scale based on drag distance
@@ -625,7 +614,6 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
                                         _resizeStartDistance = null;
                                         _cellStartSize = null;
                                         _freeCropStartOffset = null;
-                                        _activeCornerId = null;
                                       });
                                     },
                                   );
@@ -673,7 +661,6 @@ class _FreestyleEditorScreenState extends State<FreestyleEditorScreen> {
                         _selectedCellId = null;
                         _isInFreeCropMode = false;
                         _freeCropStartOffset = null;
-                        _activeCornerId = null;
                       });
                     },
                   ),
