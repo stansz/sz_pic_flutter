@@ -51,7 +51,7 @@ flutter build web
 
 ## Platform gotchas (learned the hard way)
 
-- **Web**: no `just_audio` → music disabled; slideshow export button hidden (`kIsWeb`); picked images cached as `Uint8List` in `ImageItem.bytes`; export via blob download
+- **Web**: music playback enabled Sep 2026 (`just_audio` has an official web impl) — **verify in a browser**; slideshow export sheet visible on web but offers only project-file (JSON) download (video/PNG need ffmpeg_kit + dart:io, native-only); picked images cached as `Uint8List` in `ImageItem.bytes`; export via blob download
 - **Android release builds**: R8/ProGuard strips plugin classes → crashes (e.g. image_picker platform channel error on Android 14). Rules live in `android/app/proguard-rules.pro`; keep `io.flutter.plugins.**`, Pigeon classes, and plugin classes when adding plugins
 - **Video export** (`slideshow_editor_screen.dart`): `ffmpeg_kit_flutter_new ^4.1.0` (pinned; lock = 4.1.0, native `ffmpeg-kit-full-gpl:2.1.0`) — don't bump past 4.x without a device MP4-export test (4.4.1+ changes native binaries; also fixes CVE-2026-8461). Pipeline: PNG frames + concat manifest, even-dimension scaling (`scale=trunc(iw/2)*2:trunc(ih/2)*2`) for libx264, 15fps transitions / 5fps static, temp frame folder cleaned after success. The package ships its own R8 consumer rules since 4.3.1; our `proguard-rules.pro` predates that and keeps other plugins too — keep both.
 - **Transitions**: `TransitionType.dissolve` exists in the enum but is hidden from UI (kept only to sanitize legacy saved projects). UI offers fade, slide, zoom, kenBurns

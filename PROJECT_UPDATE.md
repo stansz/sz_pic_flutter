@@ -6,6 +6,17 @@
 
 ---
 
+## September 2026 — Web Feature Parity: Cheap Wins
+
+Focused on closing the web-vs-Android feature gap. Audit showed exactly two features were cut on web, both in the slideshow editor (music playback, export). Both gates removed:
+
+- **Slideshow export sheet now visible on web** — the export button was entirely `kIsWeb`-hidden even though the project-file (JSON) path already contained working web code (blob download). The sheet now offers Video (MP4) on native only and Project File (JSON) everywhere. `_exportVideo` keeps its defensive web guard.
+- **Music enabled on web** — removed both `kIsWeb` gates (`_playMusicIfSelected`, `_showMusicOptions`). `just_audio` ships an official web implementation (`just_audio_web`), so the old "no just_audio on web" note was overly cautious. `MusicService` already degrades gracefully (`playTrack` returns `false` → snackbar) if `AudioSession`/playback fails on web.
+- Verified: `flutter analyze` (0 errors / 0 warnings, same 51 pre-existing infos), `flutter test` 45/45, `flutter build web` succeeds. **Browser runtime check of music playback still pending** (autoplay policy, `AudioSource.asset` on web).
+- Out of scope, noted for later: PNG-sequence export tile (implemented but unlisted in the sheet, native-only); WebM export via `MediaRecorder` as the realistic web video path (ffmpeg.wasm needs COOP/SharedArrayBuffer headers GitHub Pages can't serve).
+
+---
+
 ## September 2026 — Code Review & Maintenance
 
 Full review performed on a Windows 11 machine (Flutter 3.38.7 stable / Dart 3.10.7):

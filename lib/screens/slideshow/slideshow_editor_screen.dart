@@ -163,18 +163,17 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
             onPressed: _showSettings,
             tooltip: 'Settings',
           ),
-          if (!kIsWeb)
-            IconButton(
-              icon: _isExporting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.save_rounded),
-              onPressed: _isExporting ? null : _saveProject,
-              tooltip: 'Export',
-            ),
+          IconButton(
+            icon: _isExporting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.save_rounded),
+            onPressed: _isExporting ? null : _saveProject,
+            tooltip: 'Export',
+          ),
           IconButton(
             icon: const Icon(Icons.home_outlined),
             tooltip: 'Return to Home',
@@ -528,7 +527,7 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
   }
 
   Future<void> _playMusicIfSelected() async {
-    if (_selectedTrack == null || kIsWeb) return;
+    if (_selectedTrack == null) return;
     final fadeDuration = _adaptiveMusicFadeDuration;
     _cancelMusicFadeOut();
     final played = await _musicService.playTrack(
@@ -676,15 +675,6 @@ class _SlideshowEditorScreenState extends State<SlideshowEditorScreen>
   }
 
   void _showMusicOptions() {
-    if (kIsWeb) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Audio playback is disabled on web builds.'),
-        ),
-      );
-      return;
-    }
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1585,13 +1575,25 @@ try {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
+            // Video export needs ffmpeg_kit (native-only); web only gets the
+            // project-file option below.
+            if (!kIsWeb)
+              ListTile(
+                leading: const Icon(Icons.videocam),
+                title: Text(SlideshowExportFormat.video.displayName),
+                subtitle: Text(SlideshowExportFormat.video.description),
+                onTap: () {
+                  Navigator.pop(context);
+                  _exportSlideshow(SlideshowExportFormat.video);
+                },
+              ),
             ListTile(
-              leading: const Icon(Icons.videocam),
-              title: Text(SlideshowExportFormat.video.displayName),
-              subtitle: Text(SlideshowExportFormat.video.description),
+              leading: const Icon(Icons.description_rounded),
+              title: Text(SlideshowExportFormat.projectFile.displayName),
+              subtitle: Text(SlideshowExportFormat.projectFile.description),
               onTap: () {
                 Navigator.pop(context);
-                _exportSlideshow(SlideshowExportFormat.video);
+                _exportSlideshow(SlideshowExportFormat.projectFile);
               },
             ),
           ],

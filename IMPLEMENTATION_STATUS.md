@@ -55,8 +55,8 @@ Project scale: 34 Dart files, ~9,400 lines in `lib/`. Last feature work: January
 ### Slideshow Creator (`screens/slideshow/`)
 - Timeline-based editor with preview playback
 - Transitions: fade, slide, zoom, Ken Burns (the `dissolve` enum value is hidden from UI — kept only to sanitize legacy saved projects)
-- Background music: 3 wired royalty-free tracks (Kevin MacLeod, CC BY 3.0), volume control, preview, auto fade-in/out — **native only** (no `just_audio` on web)
-- Export: MP4 video (ffmpeg_kit_flutter_new), PNG sequence, project JSON — **export button hidden on web**
+- Background music: 3 wired royalty-free tracks (Kevin MacLeod, CC BY 3.0), volume control, preview, auto fade-in/out — enabled on web too (Sep 2026: removed the `kIsWeb` gates; `just_audio` ships an official web implementation. Compile + tests verified; **browser runtime check still pending** — autoplay policies and `AudioSource.asset` behavior on web are the things to watch)
+- Export: MP4 video (ffmpeg_kit_flutter_new), PNG sequence, project JSON — video/PNG are native-only (ffmpeg_kit has no web build); the export sheet is now shown on **all platforms**, offering project-file (JSON) download on web (blob download) and video on native (Sep 2026)
 
 ## 🚧 Partial / Inactive
 
